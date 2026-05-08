@@ -1,0 +1,1962 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SerDes Reference — 112G & 224G PAM4</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Archivo+Black&display=swap" rel="stylesheet">
+<style>
+
+:root {
+  --bg:      #f5f4f0;
+  --surface: #ffffff;
+  --border:  #ddd8d0;
+  --border2: #c8c2b8;
+  --txt:     #1a1a22;
+  --txt2:    #44444e;
+  --muted:   #888880;
+  --G112:    #0066cc;
+  --G224:    #cc0044;
+  --G112bg:  rgba(0,102,204,0.08);
+  --G224bg:  rgba(204,0,68,0.08);
+  --grn:     #1a7a3c;
+  --yel:     #886600;
+  --red:     #cc2233;
+  --TX:      #d45f00;
+  --ANA:     #006699;
+  --CLK:     #5544aa;
+  --DSP:     #770088;
+  --FEC:     #1a7a3c;
+  --nav-h:   52px;
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+
+body{
+  background:var(--bg);
+  color:var(--txt);
+  font-family:'IBM Plex Sans',sans-serif;
+  font-size:14px;
+  line-height:1.6;
+  min-height:100vh;
+}
+
+/* ─── TOP BAR ─── */
+.topbar{
+  position:fixed;top:0;left:0;right:0;height:var(--nav-h);
+  background:#1a1a22;
+  display:flex;align-items:center;
+  padding:0 20px;gap:0;
+  z-index:100;
+  overflow-x:auto;
+}
+
+.brand{
+  font-family:'Archivo Black',sans-serif;
+  font-size:1rem;color:#fff;
+  letter-spacing:.04em;
+  padding-right:20px;border-right:1px solid #333;
+  margin-right:6px;flex-shrink:0;
+  white-space:nowrap;
+}
+
+.brand .b1{color:#4da6ff} .brand .b2{color:#ff6688}
+
+.tab-btn{
+  height:var(--nav-h);
+  padding:0 16px;
+  font-family:'IBM Plex Sans',sans-serif;
+  font-size:.72rem;font-weight:500;
+  letter-spacing:.06em;text-transform:uppercase;
+  color:#888;cursor:pointer;
+  border:none;background:none;
+  border-bottom:3px solid transparent;
+  transition:all .15s;white-space:nowrap;flex-shrink:0;
+}
+.tab-btn:hover{color:#ccc}
+.tab-btn.active{color:#fff;border-bottom-color:#fff}
+.tab-btn.t112{color:#4da6ff} .tab-btn.t112.active{border-bottom-color:#4da6ff}
+.tab-btn.t224{color:#ff6688} .tab-btn.t224.active{border-bottom-color:#ff6688}
+.tab-btn.charts{color:#aaffcc} .tab-btn.charts.active{border-bottom-color:#aaffcc}
+
+.nav-sep{width:1px;height:28px;background:#333;margin:0 6px;flex-shrink:0}
+
+/* ─── PAGES ─── */
+.page{display:none;padding-top:var(--nav-h);min-height:100vh}
+.page.active{display:block}
+
+/* ─── OVERVIEW PAGE ─── */
+.ov-hero{
+  background:#1a1a22;
+  padding:32px 28px 24px;
+  color:#fff;
+}
+
+.ov-title{
+  font-family:'Archivo Black',sans-serif;
+  font-size:1.8rem;letter-spacing:.02em;
+  margin-bottom:6px;
+}
+
+.ov-sub{font-size:.8rem;color:#888;letter-spacing:.1em;text-transform:uppercase;margin-bottom:20px}
+
+.spec-pair{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:8px}
+
+.spec-box{
+  border-radius:4px;padding:14px 16px;
+}
+
+.spec-box.b112{background:rgba(0,102,204,0.15);border:1px solid rgba(77,166,255,0.3)}
+.spec-box.b224{background:rgba(204,0,68,0.15);border:1px solid rgba(255,102,136,0.3)}
+
+.spec-box-title{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:.7rem;font-weight:500;
+  letter-spacing:.12em;text-transform:uppercase;
+  margin-bottom:10px;
+}
+.spec-box.b112 .spec-box-title{color:#4da6ff}
+.spec-box.b224 .spec-box-title{color:#ff6688}
+
+.spec-row{display:flex;flex-wrap:wrap;gap:16px}
+.sp{display:flex;flex-direction:column;gap:2px}
+.sp-l{font-size:.62rem;color:#888;letter-spacing:.08em}
+.sp-v{font-family:'IBM Plex Mono',monospace;font-size:.85rem;font-weight:500;color:#fff}
+.sp-v.r{color:#ff6688} .sp-v.y{color:#ffcc44} .sp-v.g{color:#44cc88}
+
+/* ─── MAIN CONTENT ─── */
+.main{padding:24px 28px;max-width:1400px;margin:0 auto}
+
+.section-hdr{
+  display:flex;align-items:center;gap:12px;
+  margin:24px 0 14px;
+}
+
+.sh-line{flex:1;height:1px;background:var(--border)}
+.sh-title{
+  font-family:'Archivo Black',sans-serif;
+  font-size:.85rem;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--txt2);white-space:nowrap;
+}
+
+/* ─── STAGE CARDS ─── */
+.stages-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
+  gap:12px;
+  margin-bottom:8px;
+}
+
+.stage-card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:6px;
+  overflow:hidden;
+  cursor:pointer;
+  transition:box-shadow .15s, border-color .15s;
+}
+
+.stage-card:hover{
+  box-shadow:0 4px 16px rgba(0,0,0,.1);
+  border-color:var(--border2);
+}
+
+.sc-header{
+  padding:12px 14px 10px;
+  border-bottom:1px solid var(--border);
+  display:flex;justify-content:space-between;align-items:flex-start;
+}
+
+.sc-left{}
+.sc-domain{
+  font-size:.58rem;font-weight:600;
+  letter-spacing:.14em;text-transform:uppercase;
+  margin-bottom:3px;
+}
+.sc-name{
+  font-family:'Archivo Black',sans-serif;
+  font-size:1.05rem;letter-spacing:.02em;
+}
+
+.sc-badge{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:.62rem;font-weight:500;
+  padding:2px 7px;border-radius:2px;
+  letter-spacing:.06em;
+}
+.sc-badge.b112{background:var(--G112bg);color:var(--G112);border:1px solid rgba(0,102,204,.2)}
+.sc-badge.b224{background:var(--G224bg);color:var(--G224);border:1px solid rgba(204,0,68,.2)}
+
+.TX .sc-domain{color:var(--TX)} .TX .sc-name{color:var(--TX)}
+.ANA .sc-domain{color:var(--ANA)} .ANA .sc-name{color:var(--ANA)}
+.CLK .sc-domain{color:var(--CLK)} .CLK .sc-name{color:var(--CLK)}
+.DSP .sc-domain{color:var(--DSP)} .DSP .sc-name{color:var(--DSP)}
+.FEC .sc-domain{color:var(--FEC)} .FEC .sc-name{color:var(--FEC)}
+.PAS .sc-domain{color:var(--muted)} .PAS .sc-name{color:var(--txt2)}
+
+.sc-body{padding:12px 14px}
+
+.sc-params{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:4px 12px;margin-bottom:10px;
+}
+
+.sc-p{display:flex;flex-direction:column;gap:1px}
+.sc-pl{font-size:.6rem;color:var(--muted)}
+.sc-pv{font-family:'IBM Plex Mono',monospace;font-size:.72rem;font-weight:500;color:var(--txt)}
+.sc-pv.r{color:var(--red)} .sc-pv.y{color:var(--yel)} .sc-pv.g{color:var(--grn)} .sc-pv.b{color:var(--G112)}
+
+/* mini inline chart area */
+.mini-chart{
+  height:52px;
+  background:#f8f7f5;
+  border:1px solid var(--border);
+  border-radius:3px;
+  margin-bottom:10px;
+  position:relative;
+  overflow:hidden;
+}
+
+.sc-desc{font-size:.72rem;color:var(--txt2);line-height:1.55;margin-bottom:8px}
+
+.sc-dbg{
+  background:#fff8f5;
+  border-left:3px solid var(--TX);
+  padding:6px 9px;
+  font-size:.68rem;color:var(--txt2);
+  line-height:1.5;
+  border-radius:0 2px 2px 0;
+}
+
+.sc-dbg.TX{border-left-color:var(--TX)}
+.sc-dbg.ANA{border-left-color:var(--ANA)}
+.sc-dbg.CLK{border-left-color:var(--CLK)}
+.sc-dbg.DSP{border-left-color:var(--DSP)}
+.sc-dbg.FEC{border-left-color:var(--FEC)}
+.sc-dbg.PAS{border-left-color:var(--muted)}
+
+.dbg-title{font-weight:600;font-size:.65rem;margin-bottom:2px;color:var(--txt)}
+
+/* speed toggle */
+.speed-toggle{display:flex;gap:0;border:1px solid var(--border);border-radius:4px;overflow:hidden;margin-bottom:20px;width:fit-content}
+.st-btn{padding:7px 18px;font-size:.72rem;font-weight:600;letter-spacing:.06em;cursor:pointer;border:none;background:transparent;transition:all .15s;font-family:'IBM Plex Sans',sans-serif}
+.st-btn:hover{background:var(--border)}
+.st-btn.a112{background:var(--G112);color:#fff}
+.st-btn.a224{background:var(--G224);color:#fff}
+
+/* ─── CHARTS PAGE ─── */
+.charts-hero{
+  background:#1a1a22;
+  padding:24px 28px 18px;
+  color:#fff;
+}
+.charts-title{font-family:'Archivo Black',sans-serif;font-size:1.4rem;margin-bottom:4px}
+.charts-sub{font-size:.75rem;color:#888;letter-spacing:.08em}
+
+.charts-main{padding:24px 28px;max-width:1400px;margin:0 auto}
+
+.chart-row{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:16px;
+  margin-bottom:16px;
+}
+
+.chart-box{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:6px;
+  overflow:hidden;
+}
+
+.chart-box.wide{grid-column:1/-1}
+
+.cb-header{
+  padding:12px 16px 10px;
+  border-bottom:1px solid var(--border);
+  display:flex;justify-content:space-between;align-items:flex-start;
+}
+
+.cb-title{font-family:'Archivo Black',sans-serif;font-size:.95rem}
+.cb-sub{font-size:.65rem;color:var(--muted);margin-top:2px}
+
+.cb-legend{display:flex;gap:14px}
+.leg-item{display:flex;align-items:center;gap:5px;font-family:'IBM Plex Mono',monospace;font-size:.65rem}
+.leg-line{width:20px;height:2px;border-radius:1px}
+
+.cb-canvas{
+  padding:12px 16px;
+  position:relative;
+}
+
+.chart-note{
+  padding:10px 16px 12px;
+  font-size:.68rem;color:var(--txt2);
+  background:#fafaf8;border-top:1px solid var(--border);
+  line-height:1.6;
+}
+.chart-note strong{color:var(--txt);font-weight:600}
+
+/* annotation callout */
+.ann{
+  position:absolute;
+  background:rgba(26,26,34,.88);
+  color:#fff;font-family:'IBM Plex Mono',monospace;
+  font-size:.6rem;padding:3px 7px;border-radius:2px;
+  pointer-events:none;white-space:nowrap;
+}
+
+/* comparison summary strip */
+.summary-strip{
+  background:#1a1a22;color:#fff;
+  padding:20px 28px;
+  display:grid;grid-template-columns:repeat(6,1fr);gap:0;
+  margin-bottom:16px;
+}
+
+.ss-item{
+  padding:0 16px;
+  border-right:1px solid #333;
+}
+.ss-item:first-child{padding-left:0}
+.ss-item:last-child{border-right:none}
+
+.ss-label{font-size:.58rem;color:#888;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px}
+.ss-vals{display:flex;flex-direction:column;gap:2px}
+.ss-v{font-family:'IBM Plex Mono',monospace;font-size:.82rem;font-weight:500}
+.ss-v.c112{color:#4da6ff} .ss-v.c224{color:#ff6688}
+
+/* debug callout boxes */
+.debug-callouts{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:12px;margin-top:16px;
+}
+.dc{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:6px;padding:14px;
+}
+.dc-title{
+  font-family:'Archivo Black',sans-serif;font-size:.85rem;
+  margin-bottom:8px;
+}
+.dc-body{font-size:.7rem;color:var(--txt2);line-height:1.6}
+.dc-body li{margin-bottom:4px;padding-left:12px;position:relative}
+.dc-body li::before{content:'•';position:absolute;left:0;color:var(--muted)}
+
+/* scrollbar */
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+
+@media(max-width:768px){
+  .spec-pair,.chart-row,.chart-row.wide,.stages-grid{grid-template-columns:1fr}
+  .chart-row.wide .chart-box{grid-column:1}
+  .summary-strip{grid-template-columns:1fr 1fr;gap:10px}
+  .debug-callouts{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- ══ TOP BAR ══ -->
+<div class="topbar">
+  <div class="brand">Ser<span class="b1">Des</span><span class="b2"> Ref</span></div>
+  <button class="tab-btn active" onclick="showPage('overview')">Overview</button>
+  <div class="nav-sep"></div>
+  <button class="tab-btn t112" onclick="showPage('ref112')">112G Reference</button>
+  <button class="tab-btn t224" onclick="showPage('ref224')">224G Reference</button>
+  <div class="nav-sep"></div>
+  <button class="tab-btn charts" onclick="showPage('charts')">Diagnostic Charts</button>
+</div>
+
+<!-- ══════════════════════════════
+     OVERVIEW PAGE
+══════════════════════════════ -->
+<div class="page active" id="page-overview">
+
+  <div class="ov-hero">
+    <div class="ov-title">SerDes PAM4 Debug Reference</div>
+    <div class="ov-sub">112G · 224G · IEEE 802.3ck / 802.3df</div>
+
+    <div class="spec-pair">
+      <div class="spec-box b112">
+        <div class="spec-box-title">112G PAM4 — IEEE 802.3ck</div>
+        <div class="spec-row">
+          <div class="sp"><div class="sp-l">Baud Rate</div><div class="sp-v">53.125 GBd</div></div>
+          <div class="sp"><div class="sp-l">Symbol Period</div><div class="sp-v y">18.8 ps</div></div>
+          <div class="sp"><div class="sp-l">Nyquist</div><div class="sp-v y">26.5 GHz</div></div>
+          <div class="sp"><div class="sp-l">Pre-FEC BER</div><div class="sp-v r">≤ 2.4×10⁻⁴</div></div>
+          <div class="sp"><div class="sp-l">FEC</div><div class="sp-v">KP4 RS(544,514)</div></div>
+          <div class="sp"><div class="sp-l">Channel IL</div><div class="sp-v y">~25–35 dB @ Nyquist</div></div>
+        </div>
+      </div>
+      <div class="spec-box b224">
+        <div class="spec-box-title">224G PAM4 — IEEE 802.3df</div>
+        <div class="spec-row">
+          <div class="sp"><div class="sp-l">Baud Rate</div><div class="sp-v">106.25 GBd</div></div>
+          <div class="sp"><div class="sp-l">Symbol Period</div><div class="sp-v r">9.4 ps</div></div>
+          <div class="sp"><div class="sp-l">Nyquist</div><div class="sp-v r">53.125 GHz</div></div>
+          <div class="sp"><div class="sp-l">Pre-FEC BER</div><div class="sp-v r">≤ 2.4×10⁻⁴</div></div>
+          <div class="sp"><div class="sp-l">FEC</div><div class="sp-v">KP4 or enhanced</div></div>
+          <div class="sp"><div class="sp-l">Channel IL</div><div class="sp-v r">~35–45 dB @ Nyquist</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="section-hdr"><div class="sh-line"></div><div class="sh-title">Signal Chain</div><div class="sh-line"></div></div>
+
+    <!-- Chain SVG overview -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:16px;overflow-x:auto;margin-bottom:20px">
+      <svg viewBox="0 0 940 80" xmlns="http://www.w3.org/2000/svg" style="width:100%;min-width:700px;display:block">
+        <!-- signal wire -->
+        <line x1="10" y1="40" x2="930" y2="40" stroke="#e0ddd8" stroke-width="1.5"/>
+        <!-- blocks -->
+        <g style="cursor:pointer" onclick="showPage('ref112')">
+          <!-- TX PLL -->
+          <rect x="12" y="18" width="64" height="44" rx="3" fill="#fff8f4" stroke="#d45f00" stroke-width="1.5"/>
+          <text x="44" y="36" text-anchor="middle" font-family="'IBM Plex Mono'" font-size="8.5" font-weight="500" fill="#d45f00">TX PLL</text>
+          <text x="44" y="50" text-anchor="middle" font-family="'IBM Plex Sans'" font-size="7" fill="#888">53/106 GHz</text>
+          <!-- TX DAC -->
+          <rect x="82" y="18" width="64" height="44" rx="3" fill="#fff8f4" stroke="#d45f00" stroke-width="1.5"/>
+          <text x="114" y="36" text-anchor="middle" font-family="'IBM Plex Mono'" font-size="8.5" font-weight="500" fill="#d45f00">TX DAC</text>
+          <text x="114" y="50" text-anchor="middle" font-family="'IBM Plex Sans'" font-size="7" fill="#888">PAM4 gen</text>
+          <!-- TX FFE -->
+          <rect x="152" y="18" width="64" height="44" rx="3" fill="#fff8f4" stroke="#d45f00" stroke-width="1.5"/>
+          <text x="184" y="36" text-anchor="middle" font-family="'IBM Plex Mono'" font-size="8.5" font-weight="500" fill="#d45f00">TX FFE</text>
+          <text x="184" y="50" text-anchor="middle" font-family="'IBM Plex Sans'" font-size="7" fill="#888">pre-emph</text>
+          <!-- arrows TX section -->
+          <polygon points="78,40 74,37 74,43" fill="#d45f00" opacity=".6"/>
+          <polygon points="148,40 144,37 144,43" fill="#d45f00" opacity=".6"/>
+          <polygon points="218,40 214,37 214,43" fill="#888" opacity=".5"/>
+        </g>
+        <!-- Channel -->
+        <rect x="222" y="18" width="64" height="44" rx="3" fill="#f8f8f5" stroke="#aaa" stroke-width="1.5" stroke-dasharray="4,3"/>
+        <text x="254" y="36" text-anchor="middle" font-family="'IBM Plex Mono'" font-size="8.5" font-weight="500" fill="#666">Channel</text>
+        <text x="254" y="50" text-anchor="middle" font-family="'IBM Plex Sans'" font-size="7" fill="#888">ISI source</text>
+        <polygon points="288,40 284,37 284,43" fill="#006699" opacity=".6"/>
+        <!-- AFE -->
+        <rect x="292" y="18" width="54" height="44" rx="3" fill="#f4f8ff" stroke="#006699" stroke-width="1.5"/>
+        <text x="319" y="40" text-anchor="middle" font-family="'IBM Plex Mono'" font-size="9" font-weight="500" fill="#006699">AFE</text>
+        <text x="319" y="52" text-anchor="middle" font-family="'IBM Plex Sans'" font-size="7" fill="#888">NF floor</text>
+        <polygon points="348,40 344,37 344,43" fill="#006699" opacity=".6"/>
+        <!-- VGA -->
+        <rect x="352" y="18" width="54" height="44" rx="3" fill="#f4f8ff" stroke="#006699" stroke-width="1.5"/>
+        <text x="379" y="40" text-anchor="middle" font-family="'IBM Plex Mono'" font-size="9" font-weight="500" fill="#006699">VGA</text>
+        <text x="379" y="52" text-anchor="middle" font-family="'IBM Plex Sans'" font-size="7" fill="#888">AGC</text>
+        <polygon points="408,40 404,37 404,43" fill="#006699" opacity=".6"/>
+        <!-- CTLE -->
+        <rect x="412" y="18" width="54" height="44" rx="3" fill="#f4f8ff" stroke="#006699" stroke-width="1.5"/>
+        <text x="439" y="40" text-anchor="middle" font-family="'IBM Plex Mono'" font-size="9" font-weight="500" fill="#006699">CTLE</text>
+        <text x="439" y="52" text-anchor="middle" font-family="'IBM Plex Sans'" font-size="7" fill="#888">↓ PMR</text>
+        <polygon points="468,40 464,37 464,43" fill="#006699" opacity=".6"/>
+        <!-- ADC -->
+        <rect x="472" y="18" width="54" height="44" rx="3" fill="#f4f8ff" stroke="#006699" stroke-width="1.5"/>
+        <text x="499" y="40" text-anchor="middle" font-family="'IBM Plex Mono'" font-size="9" font-weight="500" fill="#006699">ADC</text>
+        <text x="499" y="52" text-anchor="middle" font-family="'IBM Plex Sans'" font-size="7" fill="#888">A→D</text>
+        <polygon points="528,40 524,37 524,43" fill="#5544aa" opacity=".6"/>
+        <!-- CDR -->
+        <rect x="532" y="18" width="54" height="44" rx="3" fill="#f8f6ff" stroke="#5544aa" stroke-width="1.5"/>
+        <text x="559" y="40" text-anchor="middle" font-family="'IBM Plex Mono'" font-size="9" font-weight="500" fill="#5544aa">CDR</text>
+        <text x="559" y="52" text-anchor="middle" font-family="'IBM Plex Sans'" font-size="7" fill="#888">PLL lock</text>
+        <polygon points="588,40 584,37 584,43" fill="#770088" opacity=".6"/>
+        <!-- FFE -->
+        <rect x="592" y="18" width="54" height="44" rx="3" fill="#fdf5ff" stroke="#770088" stroke-width="1.5"/>
+        <text x="619" y="40" text-anchor="middle" font-family="'IBM Plex Mono'" font-size="9" font-weight="500" fill="#770088">FFE</text>
+        <text x="619" y="52" text-anchor="middle" font-family="'IBM Plex Sans'" font-size="7" fill="#888">precursor</text>
+        <polygon points="648,40 644,37 644,43" fill="#770088" opacity=".6"/>
+        <!-- DFE -->
+        <rect x="652" y="18" width="54" height="44" rx="3" fill="#fdf5ff" stroke="#770088" stroke-width="1.5"/>
+        <text x="679" y="40" text-anchor="middle" font-family="'IBM Plex Mono'" font-size="9" font-weight="500" fill="#770088">DFE</text>
+        <text x="679" y="52" text-anchor="middle" font-family="'IBM Plex Sans'" font-size="7" fill="#888">postcursor</text>
+        <polygon points="708,40 704,37 704,43" fill="#770088" opacity=".6"/>
+        <!-- Slicer -->
+        <rect x="712" y="18" width="60" height="44" rx="3" fill="#fdf5ff" stroke="#770088" stroke-width="1.5"/>
+        <text x="742" y="40" text-anchor="middle" font-family="'IBM Plex Mono'" font-size="9" font-weight="500" fill="#770088">Slicer</text>
+        <text x="742" y="52" text-anchor="middle" font-family="'IBM Plex Sans'" font-size="7" fill="#888">PAM4 dec</text>
+        <polygon points="774,40 770,37 770,43" fill="#1a7a3c" opacity=".6"/>
+        <!-- FEC -->
+        <rect x="778" y="18" width="80" height="44" rx="3" fill="#f4fff8" stroke="#1a7a3c" stroke-width="1.5"/>
+        <text x="818" y="38" text-anchor="middle" font-family="'IBM Plex Mono'" font-size="8.5" font-weight="500" fill="#1a7a3c">KP4 FEC</text>
+        <text x="818" y="52" text-anchor="middle" font-family="'IBM Plex Sans'" font-size="7" fill="#888">RS(544,514)</text>
+        <!-- domain labels -->
+        <text x="44" y="10" text-anchor="middle" font-family="'IBM Plex Sans'" font-size="7" fill="#d45f00" font-weight="600" letter-spacing="1">TX</text>
+        <text x="380" y="10" text-anchor="middle" font-family="'IBM Plex Sans'" font-size="7" fill="#006699" font-weight="600" letter-spacing="1">ANALOG RX</text>
+        <text x="559" y="10" text-anchor="middle" font-family="'IBM Plex Sans'" font-size="7" fill="#5544aa" font-weight="600" letter-spacing="1">CDR</text>
+        <text x="690" y="10" text-anchor="middle" font-family="'IBM Plex Sans'" font-size="7" fill="#770088" font-weight="600" letter-spacing="1">DIGITAL DSP</text>
+        <text x="818" y="10" text-anchor="middle" font-family="'IBM Plex Sans'" font-size="7" fill="#1a7a3c" font-weight="600" letter-spacing="1">FEC</text>
+        <!-- TP markers -->
+        <line x1="216" y1="62" x2="216" y2="74" stroke="#d45f00" stroke-width="1" stroke-dasharray="2,2" opacity=".5"/>
+        <text x="216" y="79" text-anchor="middle" font-family="'IBM Plex Mono'" font-size="7" fill="#d45f00" opacity=".7">TP1a</text>
+        <line x1="528" y1="62" x2="528" y2="74" stroke="#006699" stroke-width="1" stroke-dasharray="2,2" opacity=".5"/>
+        <text x="528" y="79" text-anchor="middle" font-family="'IBM Plex Mono'" font-size="7" fill="#006699" opacity=".7">TP3</text>
+      </svg>
+    </div>
+
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button onclick="showPage('ref112')" style="padding:10px 20px;background:var(--G112);color:#fff;border:none;border-radius:4px;font-family:'IBM Plex Sans';font-size:.78rem;font-weight:600;cursor:pointer;letter-spacing:.04em">Open 112G Reference →</button>
+      <button onclick="showPage('ref224')" style="padding:10px 20px;background:var(--G224);color:#fff;border:none;border-radius:4px;font-family:'IBM Plex Sans';font-size:.78rem;font-weight:600;cursor:pointer;letter-spacing:.04em">Open 224G Reference →</button>
+      <button onclick="showPage('charts')" style="padding:10px 20px;background:#1a1a22;color:#fff;border:none;border-radius:4px;font-family:'IBM Plex Sans';font-size:.78rem;font-weight:600;cursor:pointer;letter-spacing:.04em">View Diagnostic Charts →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+     112G REFERENCE PAGE
+══════════════════════════════ -->
+<div class="page" id="page-ref112">
+  <div class="ov-hero">
+    <div class="ov-title" style="color:#4da6ff">112G PAM4 — Stage Reference</div>
+    <div class="ov-sub">IEEE 802.3ck · 53.125 GBaud · Nyquist 26.5 GHz · Symbol 18.8 ps</div>
+  </div>
+  <div class="main" id="stages-112"></div>
+</div>
+
+<!-- ══════════════════════════════
+     224G REFERENCE PAGE
+══════════════════════════════ -->
+<div class="page" id="page-ref224">
+  <div class="ov-hero">
+    <div class="ov-title" style="color:#ff6688">224G PAM4 — Stage Reference</div>
+    <div class="ov-sub">IEEE 802.3df · 106.25 GBaud · Nyquist 53.125 GHz · Symbol 9.4 ps</div>
+  </div>
+  <div class="main" id="stages-224"></div>
+</div>
+
+<!-- ══════════════════════════════
+     DIAGNOSTIC CHARTS PAGE
+══════════════════════════════ -->
+<div class="page" id="page-charts">
+  <div class="charts-hero">
+    <div class="charts-title">Diagnostic Charts — 112G vs 224G</div>
+    <div class="charts-sub">Typical signal behavior · Visual comparison · Debug reference</div>
+  </div>
+
+  <!-- Summary strip -->
+  <div class="summary-strip">
+    <div class="ss-item">
+      <div class="ss-label">Nyquist Freq</div>
+      <div class="ss-vals">
+        <div class="ss-v c112">26.5 GHz</div>
+        <div class="ss-v c224">53.1 GHz</div>
+      </div>
+    </div>
+    <div class="ss-item">
+      <div class="ss-label">Channel IL target</div>
+      <div class="ss-vals">
+        <div class="ss-v c112">≤ 30 dB</div>
+        <div class="ss-v c224">≤ 40 dB</div>
+      </div>
+    </div>
+    <div class="ss-item">
+      <div class="ss-label">Symbol Period</div>
+      <div class="ss-vals">
+        <div class="ss-v c112">18.8 ps</div>
+        <div class="ss-v c224">9.4 ps</div>
+      </div>
+    </div>
+    <div class="ss-item">
+      <div class="ss-label">ADC ENOB</div>
+      <div class="ss-vals">
+        <div class="ss-v c112">5–6 bits</div>
+        <div class="ss-v c224">4–5 bits</div>
+      </div>
+    </div>
+    <div class="ss-item">
+      <div class="ss-label">DFE timing</div>
+      <div class="ss-vals">
+        <div class="ss-v c112">4.8× violation</div>
+        <div class="ss-v c224">9.6× violation</div>
+      </div>
+    </div>
+    <div class="ss-item">
+      <div class="ss-label">Pre-FEC BER cliff</div>
+      <div class="ss-vals">
+        <div class="ss-v c112">2.4×10⁻⁴</div>
+        <div class="ss-v c224">2.4×10⁻⁴</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="charts-main">
+
+    <!-- ROW 1: Insertion Loss + Return Loss -->
+    <div class="chart-row">
+      <div class="chart-box">
+        <div class="cb-header">
+          <div>
+            <div class="cb-title">Channel Insertion Loss (S21)</div>
+            <div class="cb-sub">Measured at receiver input · typical PCB copper trace + connector</div>
+          </div>
+          <div class="cb-legend">
+            <div class="leg-item"><div class="leg-line" style="background:var(--G112)"></div>112G</div>
+            <div class="leg-item"><div class="leg-line" style="background:var(--G224)"></div>224G</div>
+            <div class="leg-item"><div class="leg-line" style="background:#aaa;border-top-style:dashed"></div>Pass mask</div>
+          </div>
+        </div>
+        <div class="cb-canvas"><canvas id="c-il" width="480" height="220"></canvas></div>
+        <div class="chart-note">
+          <strong>112G:</strong> Nyquist at 26.5 GHz — typically 25–35 dB IL. CTLE must compensate this rolloff.<br>
+          <strong>224G:</strong> Nyquist doubles to 53 GHz — same trace now shows 35–45 dB IL. Skin effect ∝√f adds ~3 dB and dielectric ∝f adds another 6 dB vs 112G.
+        </div>
+      </div>
+
+      <div class="chart-box">
+        <div class="cb-header">
+          <div>
+            <div class="cb-title">Return Loss (S11) — Impedance Quality</div>
+            <div class="cb-sub">Reflection from connectors and via stubs · target > 12 dB</div>
+          </div>
+          <div class="cb-legend">
+            <div class="leg-item"><div class="leg-line" style="background:var(--G112)"></div>112G</div>
+            <div class="leg-item"><div class="leg-line" style="background:var(--G224)"></div>224G</div>
+          </div>
+        </div>
+        <div class="cb-canvas"><canvas id="c-rl" width="480" height="220"></canvas></div>
+        <div class="chart-note">
+          <strong>Via stub notch:</strong> A 2mm via stub resonates at ~18 GHz (in 112G band). At 224G, a 1mm stub resonates at ~18 GHz — right in the signal band. All stubs must be back-drilled.<br>
+          <strong>Target:</strong> Return loss > 12 dB across the full band (26.5 GHz for 112G, 53 GHz for 224G).
+        </div>
+      </div>
+    </div>
+
+    <!-- ROW 2: TDR + Eye Diagram -->
+    <div class="chart-row">
+      <div class="chart-box">
+        <div class="cb-header">
+          <div>
+            <div class="cb-title">TDR — Time Domain Reflectometry</div>
+            <div class="cb-sub">Impedance profile vs physical distance on PCB</div>
+          </div>
+          <div class="cb-legend">
+            <div class="leg-item"><div class="leg-line" style="background:#666"></div>Impedance</div>
+            <div class="leg-item"><div class="leg-line" style="background:#cc2233;border-top-style:dashed"></div>50Ω target</div>
+          </div>
+        </div>
+        <div class="cb-canvas"><canvas id="c-tdr" width="480" height="220"></canvas></div>
+        <div class="chart-note">
+          <strong>Reading a TDR:</strong> Step edge sent into channel. Reflections arrive back in time proportional to distance (≈15 cm/ns in FR4). Upward bump = inductive discontinuity (connector). Downward dip = capacitive discontinuity (via stub). Flat sections = good 50Ω trace.
+        </div>
+      </div>
+
+      <div class="chart-box">
+        <div class="cb-header">
+          <div>
+            <div class="cb-title">PAM4 Eye Diagram — at Slicer Input</div>
+            <div class="cb-sub">After all equalization · pre-FEC BER depends on eye opening</div>
+          </div>
+          <div class="cb-legend">
+            <div class="leg-item"><div class="leg-line" style="background:var(--G112)"></div>112G eye</div>
+            <div class="leg-item"><div class="leg-line" style="background:var(--G224)"></div>224G eye</div>
+          </div>
+        </div>
+        <div class="cb-canvas"><canvas id="c-eye" width="480" height="220"></canvas></div>
+        <div class="chart-note">
+          <strong>3 eyes for PAM4:</strong> Each eye represents one transition (L0↔L1, L1↔L2, L2↔L3). Ideal eye height = Vppd/6. ISI closes eye vertically. Jitter closes eye horizontally.<br>
+          <strong>224G eye is smaller</strong> due to more channel loss, less CTLE headroom, tighter jitter budget (9.4 ps vs 18.8 ps).
+        </div>
+      </div>
+    </div>
+
+    <!-- ROW 3: SNR + BER waterfall -->
+    <div class="chart-row">
+      <div class="chart-box">
+        <div class="cb-header">
+          <div>
+            <div class="cb-title">SNR Budget Waterfall</div>
+            <div class="cb-sub">How SNR margin is consumed stage by stage through the chain</div>
+          </div>
+          <div class="cb-legend">
+            <div class="leg-item"><div class="leg-line" style="background:var(--G112)"></div>112G</div>
+            <div class="leg-item"><div class="leg-line" style="background:var(--G224)"></div>224G</div>
+          </div>
+        </div>
+        <div class="cb-canvas"><canvas id="c-snr" width="480" height="220"></canvas></div>
+        <div class="chart-note">
+          <strong>Starting SNR</strong> is set by TX swing and channel loss. Each stage consumes margin: channel IL consumes most, then AFE NF, CTLE noise boost, FFE noise boost, ADC quantization.<br>
+          <strong>224G starts with less</strong> and each stage costs more. The remaining margin before the KP4 cliff is much tighter.
+        </div>
+      </div>
+
+      <div class="chart-box">
+        <div class="cb-header">
+          <div>
+            <div class="cb-title">Pre-FEC BER vs Channel Length</div>
+            <div class="cb-sub">Typical reach curves for standard PCB material (Megtron 6)</div>
+          </div>
+          <div class="cb-legend">
+            <div class="leg-item"><div class="leg-line" style="background:var(--G112)"></div>112G</div>
+            <div class="leg-item"><div class="leg-line" style="background:var(--G224)"></div>224G</div>
+            <div class="leg-item"><div class="leg-line" style="background:#cc2233;border-top-style:dashed"></div>KP4 cliff</div>
+          </div>
+        </div>
+        <div class="cb-canvas"><canvas id="c-reach" width="480" height="220"></canvas></div>
+        <div class="chart-note">
+          <strong>112G:</strong> Typically achieves 10–15 cm reach on Megtron 6 at < 2.4×10⁻⁴ pre-FEC BER.<br>
+          <strong>224G:</strong> Same board material limits reach to 5–8 cm. The BER cliff is reached much sooner as channel length increases.
+        </div>
+      </div>
+    </div>
+
+    <!-- ROW 4: Crosstalk + FEC correction histogram (wide row) -->
+    <div class="chart-row">
+      <div class="chart-box">
+        <div class="cb-header">
+          <div>
+            <div class="cb-title">Crosstalk — FEXT vs Frequency</div>
+            <div class="cb-sub">Far-end crosstalk between adjacent lanes · cannot be equalized</div>
+          </div>
+          <div class="cb-legend">
+            <div class="leg-item"><div class="leg-line" style="background:var(--G112)"></div>112G FEXT</div>
+            <div class="leg-item"><div class="leg-line" style="background:var(--G224)"></div>224G FEXT</div>
+            <div class="leg-item"><div class="leg-line" style="background:#888;border-top-style:dashed"></div>NEXT</div>
+          </div>
+        </div>
+        <div class="cb-canvas"><canvas id="c-xtalk" width="480" height="220"></canvas></div>
+        <div class="chart-note">
+          <strong>Crosstalk worsens with frequency.</strong> At 224G (Nyquist 53 GHz), FEXT is significantly higher than at 112G because mutual capacitance coupling scales with frequency. Cannot be cancelled by EQ — must be controlled by PCB layout (spacing, stitching vias, reference planes).
+        </div>
+      </div>
+
+      <div class="chart-box">
+        <div class="cb-header">
+          <div>
+            <div class="cb-title">FEC Correction Count Histogram</div>
+            <div class="cb-sub">Corrections per codeword · key early warning metric</div>
+          </div>
+          <div class="cb-legend">
+            <div class="leg-item"><div class="leg-line" style="background:var(--G112)"></div>112G healthy</div>
+            <div class="leg-item"><div class="leg-line" style="background:var(--G224)"></div>224G typical</div>
+            <div class="leg-item"><div class="leg-line" style="background:#cc2233"></div>Degraded link</div>
+          </div>
+        </div>
+        <div class="cb-canvas"><canvas id="c-fec" width="480" height="220"></canvas></div>
+        <div class="chart-note">
+          <strong>Healthy link:</strong> Vast majority of codewords need 0 corrections. 112G links with good margin rarely exceed 2–3 corrections/CW.<br>
+          <strong>224G typical:</strong> Slightly more corrections per codeword due to tighter margin. Monitor trend over time.<br>
+          <strong>Degraded:</strong> Distribution shifts right toward 15. At 15 corrections = cliff edge.
+        </div>
+      </div>
+    </div>
+
+    <!-- ROW 5: Phase noise + CDR jitter tolerance (wide) -->
+    <div class="chart-row">
+      <div class="chart-box">
+        <div class="cb-header">
+          <div>
+            <div class="cb-title">VCO Phase Noise Spectrum</div>
+            <div class="cb-sub">LC-tank VCO · 112G at 53 GHz vs 224G at 106 GHz</div>
+          </div>
+          <div class="cb-legend">
+            <div class="leg-item"><div class="leg-line" style="background:var(--G112)"></div>112G VCO @ 53G</div>
+            <div class="leg-item"><div class="leg-line" style="background:var(--G224)"></div>224G VCO @ 106G</div>
+          </div>
+        </div>
+        <div class="cb-canvas"><canvas id="c-pn" width="480" height="220"></canvas></div>
+        <div class="chart-note">
+          <strong>Phase noise degrades at higher frequency.</strong> LC-tank VCO at 106 GHz has ~6 dB worse phase noise than at 53 GHz for the same inductor Q. This directly translates to more sampling clock jitter at 224G, causing horizontal eye closure at the slicer.
+        </div>
+      </div>
+
+      <div class="chart-box">
+        <div class="cb-header">
+          <div>
+            <div class="cb-title">CDR Jitter Tolerance (JTOL) Mask</div>
+            <div class="cb-sub">Maximum tolerable sinusoidal jitter amplitude vs frequency</div>
+          </div>
+          <div class="cb-legend">
+            <div class="leg-item"><div class="leg-line" style="background:var(--G112)"></div>112G JTOL</div>
+            <div class="leg-item"><div class="leg-line" style="background:var(--G224)"></div>224G JTOL</div>
+          </div>
+        </div>
+        <div class="cb-canvas"><canvas id="c-jtol" width="480" height="220"></canvas></div>
+        <div class="chart-note">
+          <strong>JTOL is measured in UI (unit intervals).</strong> At low frequencies (within CDR BW), the CDR tracks jitter — tolerance is high. Above CDR BW, CDR cannot track — tolerance drops sharply.<br>
+          <strong>224G tolerance is tighter</strong> in absolute picoseconds because the UI is only 9.4 ps vs 18.8 ps.
+        </div>
+      </div>
+    </div>
+
+    <!-- ROW 6: ADC histogram comparison -->
+    <div class="chart-row">
+      <div class="chart-box">
+        <div class="cb-header">
+          <div>
+            <div class="cb-title">ADC Output Histogram — VGA Gain States</div>
+            <div class="cb-sub">Distribution of ADC output codes · diagnostic for VGA and clipping</div>
+          </div>
+          <div class="cb-legend">
+            <div class="leg-item"><div class="leg-line" style="background:#22aa55"></div>Optimal</div>
+            <div class="leg-item"><div class="leg-line" style="background:#eaa500"></div>Too low gain</div>
+            <div class="leg-item"><div class="leg-line" style="background:#cc2233"></div>Clipping</div>
+          </div>
+        </div>
+        <div class="cb-canvas"><canvas id="c-hist" width="480" height="220"></canvas></div>
+        <div class="chart-note">
+          <strong>Optimal:</strong> Bell-shaped distribution using most of ADC range without rail saturation.<br>
+          <strong>Too low gain:</strong> Signal uses only center portion of ADC range. Quantization noise dominates.<br>
+          <strong>Clipping:</strong> Codes pile up at max/min values (rails). Hard nonlinear distortion — unrecoverable. Check if > 0.1% of codes at max value.
+        </div>
+      </div>
+
+      <div class="chart-box">
+        <div class="cb-header">
+          <div>
+            <div class="cb-title">Pulse Response — ISI Cursor Profile</div>
+            <div class="cb-sub">Channel impulse response · shows PMR and ISI tap magnitudes</div>
+          </div>
+          <div class="cb-legend">
+            <div class="leg-item"><div class="leg-line" style="background:var(--G112)"></div>112G channel</div>
+            <div class="leg-item"><div class="leg-line" style="background:var(--G224)"></div>224G channel</div>
+          </div>
+        </div>
+        <div class="cb-canvas"><canvas id="c-pulse" width="480" height="220"></canvas></div>
+        <div class="chart-note">
+          <strong>Main cursor h[0]:</strong> The actual transmitted symbol amplitude after the channel.<br>
+          <strong>Postcursors h[1], h[2]...:</strong> ISI tails from previous symbols. PMR = h[1]/h[0]. 224G has larger relative postcursors (worse PMR) because the channel causes more dispersion at higher frequencies.
+        </div>
+      </div>
+    </div>
+
+    <!-- Debug callout boxes -->
+    <div class="section-hdr"><div class="sh-line"></div><div class="sh-title">What to Do When You See These Charts</div><div class="sh-line"></div></div>
+    <div class="debug-callouts">
+      <div class="dc">
+        <div class="dc-title" style="color:var(--G112)">Insertion Loss Issues</div>
+        <div class="dc-body">
+          <ul>
+            <li>S21 drops sharply at a specific frequency → <strong>via stub resonance</strong> — back-drill or blind vias</li>
+            <li>IL monotonically high across all frequencies → <strong>trace too long or bad PCB material</strong> — check tan δ, shorten route</li>
+            <li>IL spikes correlated with frequency → <strong>impedance ripple</strong> — check trace width consistency</li>
+            <li>Run <strong>COM simulation</strong> on measured S-params before powering up SerDes — know if channel passes first</li>
+          </ul>
+        </div>
+      </div>
+      <div class="dc">
+        <div class="dc-title" style="color:#5544aa">Eye Diagram Issues</div>
+        <div class="dc-body">
+          <ul>
+            <li>Eye closed vertically → run baud rate sweep: improves = <strong>ISI</strong> (fix EQ), flat = <strong>noise</strong> (NF, crosstalk)</li>
+            <li>Eye closed horizontally → <strong>CDR jitter</strong> or <strong>deterministic jitter</strong> source — check phase noise</li>
+            <li>Asymmetric eye heights → <strong>nonlinearity</strong> (DAC, VGA) or <strong>threshold miscalibration</strong></li>
+            <li>Outer eyes smaller than inner → <strong>compression at high amplitude</strong> — check VGA gain</li>
+            <li>224G eye will always look smaller — <strong>Q ≥ 4</strong> is the target (not Q ≥ 5 like 112G)</li>
+          </ul>
+        </div>
+      </div>
+      <div class="dc">
+        <div class="dc-title" style="color:var(--FEC)">FEC / BER Issues</div>
+        <div class="dc-body">
+          <ul>
+            <li>FEC correction count rising → <strong>margin shrinking</strong> — debug before the cliff</li>
+            <li>BER plateaus at high baud but not low → <strong>noise limited</strong> — check AFE NF, crosstalk</li>
+            <li>BER improves at lower baud → <strong>ISI limited</strong> — optimize EQ chain (CTLE, FFE, DFE)</li>
+            <li>All 128 lanes degrade simultaneously → <strong>power droop</strong> or shared clock issue</li>
+            <li>Burst errors longer than 2–3 symbols → <strong>precoding disabled</strong> — check enable register</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+     JAVASCRIPT — DATA + CHARTS
+══════════════════════════════ -->
+<script>
+
+// ════════════════════════════
+// STAGE DATA
+// ════════════════════════════
+const STAGES_DATA = {
+  "112":[
+    {
+      dom:"TX Domain",cls:"TX",name:"TX PLL",spd:"112G",
+      params:[{l:"Output Freq",v:"53.125 GHz",c:"b"},{l:"Phase Noise",v:"≤ −110 dBc/Hz",c:""},{l:"Jitter (RMS)",v:"< 100 fs",c:"g"},{l:"Lock Time",v:"1–100 µs",c:""}],
+      desc:"Generates 53.125 GHz clock from 156 MHz reference using LC-tank VCO (N=340). Phase noise sets TX jitter floor. Must lock before any link training.",
+      dbgTitle:"PLL Not Locking?",
+      dbg:"Check reference clock, VCO ctrl voltage not railed, lock-detect register = 1 required. High phase noise → wide TX eye → RX CDR stress."
+    },
+    {
+      dom:"TX Domain",cls:"TX",name:"TX DAC",spd:"112G",
+      params:[{l:"Output Swing",v:"400–1000 mVppd",c:"b"},{l:"SNDR",v:"≥ 27 dB",c:""},{l:"LSMR",v:"≤ 3 dB",c:""},{l:"Driver BW",v:"> 60 GHz",c:""}],
+      desc:"Current-steering DAC generates 4 analog levels. DAC nonlinearity (INL/DNL) creates unequal PAM4 eye heights — measured by LSMR. All 3 eyes must be equal for symmetric BER.",
+      dbgTitle:"Asymmetric Eye Heights?",
+      dbg:"Unequal eyes → DAC INL nonlinearity or impedance mismatch (poor S11). Measure LSMR. Check per-transition BER: L0↔L1 vs L1↔L2 vs L2↔L3."
+    },
+    {
+      dom:"TX Domain",cls:"TX",name:"TX FFE",spd:"112G",
+      params:[{l:"Taps",v:"4–5",c:""},{l:"Tap Constraint",v:"Σ|cₖ| ≤ 1",c:""},{l:"Goal",v:"RX FFE taps < 0.1",c:"g"},{l:"Protocol",v:"802.3 Clause 72/93",c:""}],
+      desc:"Pre-distorts TX signal to compensate channel roll-off. Shifts EQ burden from RX to TX — every 1 dB moved to TX saves ~1 dB noise boost at RX DSP. Adapts via link training at every power-on.",
+      dbgTitle:"RX FFE Taps Large (>0.3)?",
+      dbg:"Do NOT increase RX FFE — that worsens noise. Increase TX pre-cursor tap instead. Monitor RX taps — should shrink. Large RX taps = TX FFE under-configured."
+    },
+    {
+      dom:"Passive",cls:"PAS",name:"Channel",spd:"112G",
+      params:[{l:"IL @ 26.5 GHz",v:"Up to 30+ dB",c:"r"},{l:"COM Min",v:"≥ 3 dB",c:""},{l:"PMR typical",v:"0.3–0.6",c:"r"},{l:"Impedance",v:"50Ω ±10%",c:""}],
+      desc:"PCB trace + connectors. Low-pass filter with 30+ dB IL at Nyquist. Cannot be changed post-deployment. Loss from skin effect (∝√f), dielectric (∝f×tan δ), via stubs, connector discontinuities.",
+      dbgTitle:"Channel Failing COM?",
+      dbg:"Run COM on measured S-params (VNA to 40 GHz). Check for via stub resonance notches in S21. Look at TDR for impedance bumps at connector or stub locations."
+    },
+    {
+      dom:"Analog RX",cls:"ANA",name:"AFE",spd:"112G",
+      params:[{l:"Noise Figure",v:"< 5 dB",c:""},{l:"Bandwidth",v:"> 30 GHz",c:""},{l:"Input RL",v:"> 10 dB",c:""},{l:"ESD Cap",v:"< 50 fF",c:""}],
+      desc:"Sets the irreducible noise floor for the entire RX chain (Friis formula — 1st stage dominates). 50Ω termination prevents reflections. ESD diode capacitance limits bandwidth.",
+      dbgTitle:"BER Plateau Regardless of EQ?",
+      dbg:"BER not improving at lower baud rate → noise limited, not ISI. AFE NF too high or TX power too low. No equalization can fix this. Check S11 at RX input — poor match adds precursor ISI."
+    },
+    {
+      dom:"Analog RX",cls:"ANA",name:"VGA",spd:"112G",
+      params:[{l:"Gain Range",v:"0–30 dB",c:""},{l:"Clip Rule",v:"Must not clip",c:"r"},{l:"AGC BW",v:"Very slow (ms)",c:""},{l:"Gain Steps",v:"0.5–1 dB",c:""}],
+      desc:"Adjusts signal amplitude so ADC operates at optimal input level. AGC feedback loop measures RMS power and adjusts gain slowly. Clipping = hard nonlinear distortion = unrecoverable.",
+      dbgTitle:"ADC Clipping?",
+      dbg:"Check ADC histogram FIRST — rail saturation > 0.1% = clipping. Reduce VGA gain. If AGC oscillating, reduce loop bandwidth. DC offset at high gain → check offset calibration."
+    },
+    {
+      dom:"Analog RX",cls:"ANA",name:"CTLE",spd:"112G",
+      params:[{l:"PMR Before",v:"> 0.5 typical",c:"r"},{l:"PMR After",v:"< 0.2 target",c:"g"},{l:"Peaking",v:"0–15 dB",c:""},{l:"Noise Cost",v:"+1 dB per +1 dB",c:"r"}],
+      desc:"Analog high-pass filter reduces PMR before ADC. Lower PMR = ADC needs fewer bits = less power. Fundamental tradeoff: every 1 dB of peaking adds 1 dB of noise.",
+      dbgTitle:"PMR Still High After CTLE?",
+      dbg:"Increase CTLE gain in 3 dB steps, measure PMR after each. If PMR low but BER still bad → noise dominant, not ISI — back off CTLE. ωz must match channel −3 dB frequency."
+    },
+    {
+      dom:"Analog RX",cls:"ANA",name:"ADC",spd:"112G",
+      params:[{l:"Architecture",v:"TI-ADC N=8–16",c:""},{l:"ENOB",v:"5–6 bits",c:""},{l:"Sample Rate",v:"53.125 GSps",c:""},{l:"Power",v:"200–400 mW",c:"r"}],
+      desc:"Time-interleaved ADC runs N sub-ADCs at 53/N GHz each. Sub-ADC mismatch (offset, gain, timing skew) creates spurious tones at f_s/N — must be calibrated continuously.",
+      dbgTitle:"TI-ADC Spurs in Spectrum?",
+      dbg:"Tones at f_s/N harmonics → TI mismatch. Verify background calibration converged. Check ENOB vs frequency — aperture jitter causes ENOB loss at high input frequency."
+    },
+    {
+      dom:"Clock/CDR",cls:"CLK",name:"CDR",spd:"112G",
+      params:[{l:"VCO Freq",v:"~53 GHz LC-tank",c:""},{l:"Capture Range",v:"±1000 ppm",c:""},{l:"Loop BW",v:"1–10 MHz",c:""},{l:"Symbol Period",v:"18.8 ps",c:""}],
+      desc:"Recovers TX clock from data. Without CDR: ±1000 ppm frequency offset causes sampling phase to drift across the full 18.8 ps eye in ~20 µs. Check lock FIRST before any EQ debug.",
+      dbgTitle:"CDR Not Locking?",
+      dbg:"Lock-detect register = 0 → VCO ctrl voltage railed = outside ±1000 ppm capture range. Check baud rate configuration. Narrow eye width (locked) → VCO phase noise too high, loop BW too wide."
+    },
+    {
+      dom:"Digital DSP",cls:"DSP",name:"Digital FFE",spd:"112G",
+      params:[{l:"Taps",v:"7 (3pre+1+3post)",c:""},{l:"Target Magnitude",v:"All < 0.1",c:"g"},{l:"Noise Enhancement",v:"Σ|wₖ|² < 3",c:""},{l:"Adaptation",v:"LMS",c:""}],
+      desc:"Linear FIR filter cancels precursor ISI using buffered future samples. Cannot separate signal from noise — boosting high frequencies for ISI cancellation also boosts noise equally.",
+      dbgTitle:"Large FFE Taps?",
+      dbg:"Do NOT increase RX FFE — worsens noise. Increase TX FFE pre-cursor. Monitor noise enhancement Σ|wₖ|² — target < 3. If not converging, reduce LMS step size µ."
+    },
+    {
+      dom:"Digital DSP",cls:"DSP",name:"DFE",spd:"112G",
+      params:[{l:"Noise Added",v:"Zero",c:"g"},{l:"Handles",v:"Postcursor ISI only",c:""},{l:"Architecture",v:"Speculative (tap 1)",c:""},{l:"Precoding",v:"Must be enabled",c:"r"}],
+      desc:"Cancels postcursor ISI using hard PAM4 decisions — zero noise boost advantage over FFE. Sequential loop (90 ps) exceeds symbol period (18.8 ps), requiring speculative architecture for tap 1.",
+      dbgTitle:"Burst Errors > 2 Symbols?",
+      dbg:"Precoding disabled → error cascade. Check enable register. Taps not settling → run CTLE first to reduce PMR. Large tap 1 → near-channel reflector, use TDR to locate."
+    },
+    {
+      dom:"Digital DSP",cls:"DSP",name:"Slicer",spd:"112G",
+      params:[{l:"Thresholds",v:"3 (T01, T12, T23)",c:""},{l:"Eye Height",v:"Vppd/6 ideal",c:""},{l:"Q-factor",v:"≥ 5 per eye",c:""},{l:"Pre-FEC BER",v:"≤ 2.4×10⁻⁴",c:"r"}],
+      desc:"Makes hard PAM4 decisions with 3 thresholds. Eye diagram at slicer input is the single most important debug view. Q = eye_height/(2σ_noise), BER ≈ 0.5·erfc(Q/√2).",
+      dbgTitle:"Eye Closed at Slicer?",
+      dbg:"Baud rate sweep: BER improves = ISI limited (fix EQ). BER flat = noise limited. Asymmetric eyes = nonlinearity (DAC, VGA). Sweep thresholds to find BER minimum for calibration."
+    },
+    {
+      dom:"FEC",cls:"FEC",name:"KP4 FEC",spd:"112G",
+      params:[{l:"Code",v:"RS(544,514) GF(2¹⁰)",c:""},{l:"Error Capacity",v:"15 symbols/CW",c:""},{l:"Pre-FEC Limit",v:"2.4×10⁻⁴",c:"r"},{l:"Post-FEC",v:"~10⁻¹⁵",c:"g"}],
+      desc:"Binary cliff: below 2.4×10⁻⁴ → post-FEC ~10⁻¹⁵. Above → collapses. No graceful degradation. Cannot fix ISI (EQ must) or thermal noise. Monitor correction count histogram as early warning.",
+      dbgTitle:"Pre-FEC BER Above Cliff?",
+      dbg:"EQ chain failing — fix CTLE, FFE, DFE, CDR before expecting FEC to save the link. FEC correction count trending right = margin shrinking = act now before cliff is reached."
+    },
+  ],
+
+  "224":[
+    {
+      dom:"TX Domain",cls:"TX",name:"TX PLL",spd:"224G",
+      params:[{l:"Output Freq",v:"106.25 GHz",c:"r"},{l:"Architecture",v:"53G VCO + ×2",c:""},{l:"Phase Noise",v:"≤ −105 dBc/Hz",c:"r"},{l:"Jitter (RMS)",v:"< 50 fs",c:"r"}],
+      desc:"Must generate 106.25 GHz. Common approach: proven 53 GHz LC-VCO + ×2 frequency multiplier. Phase noise is inherently worse at 2× frequency — same inductor Q gives 6 dB worse PN at 106 GHz.",
+      dbgTitle:"Two-Stage Lock Detection",
+      dbg:"Check both PLL lock AND multiplier lock. Multiplier spurs at ±f_ref/N. 224G jitter budget is < 50 fs (tighter than 112G's 100 fs) — same absolute jitter is twice as bad in UI."
+    },
+    {
+      dom:"TX Domain",cls:"TX",name:"TX DAC",spd:"224G",
+      params:[{l:"Swing",v:"400–800 mVppd",c:"y"},{l:"Driver BW",v:"> 120 GHz",c:"r"},{l:"Symbol Period",v:"9.4 ps to settle",c:"r"},{l:"SNDR",v:"≥ 25 dB",c:""}],
+      desc:"Output driver must have >120 GHz bandwidth to settle within 9.4 ps. Swing reduced vs 112G to relax driver BW requirement. Incomplete settling = ISI before the channel even starts.",
+      dbgTitle:"DAC Not Settling in 9.4 ps?",
+      dbg:"FFE postcursor tap 1 large even on short reference channel = DAC ISI. S11 measurement now requires VNA to 110+ GHz. Reduced swing is expected — verify still in compliance range."
+    },
+    {
+      dom:"TX Domain",cls:"TX",name:"TX FFE",spd:"224G",
+      params:[{l:"Taps",v:"5–7 (more than 112G)",c:"r"},{l:"Pre-cursor taps",v:"2–3",c:"r"},{l:"Goal",v:"RX FFE taps < 0.15",c:""},{l:"Importance",v:"Critical — CTLE limited",c:"r"}],
+      desc:"Even more critical than at 112G. CTLE is limited to ~8–10 dB peaking at 224G due to stability concerns at 53 GHz Nyquist. TX FFE must compensate for this reduced CTLE contribution.",
+      dbgTitle:"CTLE Maxed But RX FFE Still Large?",
+      dbg:"At 224G, CTLE is limited. TX FFE must do more work. Configure 2–3 pre-cursor taps (vs 1 at 112G). Larger optimization space means link training takes longer to converge."
+    },
+    {
+      dom:"Passive",cls:"PAS",name:"Channel",spd:"224G",
+      params:[{l:"IL @ 53 GHz",v:"30–45+ dB",c:"r"},{l:"Reach",v:"~50% of 112G",c:"r"},{l:"VNA Required",v:"110+ GHz",c:"r"},{l:"Via Stub",v:"Even 1mm resonates",c:"r"}],
+      desc:"Nyquist doubles to 53 GHz. Same PCB trace now has 10–15 dB more IL. Via stubs resonant at 18 GHz for 112G are now at 9 GHz — right in the 224G band. All stubs must be back-drilled.",
+      dbgTitle:"Channel Failing at 224G but OK at 112G?",
+      dbg:"Expected — same channel is much worse at 2× freq. Run 802.3df COM. All via stubs must be back-drilled. 112G-validated connectors may fail ERL at 53 GHz. VNA to 110+ GHz required."
+    },
+    {
+      dom:"Analog RX",cls:"ANA",name:"AFE",spd:"224G",
+      params:[{l:"NF Target",v:"< 4 dB",c:"r"},{l:"Bandwidth",v:"> 60 GHz",c:"r"},{l:"ESD Cap",v:"< 20 fF ideally",c:"r"},{l:"Input RL",v:"> 10 dB to 53 GHz",c:"r"}],
+      desc:"Bandwidth must double to >60 GHz. ESD diodes at 50 fF (OK for 112G) now limit bandwidth to ~64 GHz — barely above 224G Nyquist. Requires new ESD architecture or reduced ESD protection.",
+      dbgTitle:"AFE Bandwidth Limiting at 224G?",
+      dbg:"BER plateau not responsive to CTLE adjustment = AFE BW limit, not ISI. NF measurement requires specialized setup to 50+ GHz. Standard 40 GHz VNA insufficient for S11 characterization."
+    },
+    {
+      dom:"Analog RX",cls:"ANA",name:"VGA",spd:"224G",
+      params:[{l:"Gain Range",v:"0–20 dB (reduced)",c:"r"},{l:"Bandwidth",v:"> 60 GHz",c:"r"},{l:"Clip Rule",v:"Must not clip",c:"r"},{l:"Gain-BW",v:"More severe tradeoff",c:"r"}],
+      desc:"Gain range reduced to 0–20 dB (vs 0–30 dB at 112G) because achieving 30 dB gain with >60 GHz bandwidth simultaneously is extremely difficult. Less dynamic range to work with.",
+      dbgTitle:"VGA Cannot Cover Channel Variation?",
+      dbg:"If channel IL varies > 20 dB across lanes, VGA may not cover full range. Check VGA gain register distribution across all lanes. Same clipping check as 112G — histogram rails first."
+    },
+    {
+      dom:"Analog RX",cls:"ANA",name:"CTLE",spd:"224G",
+      params:[{l:"Max Peaking",v:"~8–10 dB",c:"r"},{l:"vs 112G",v:"15 dB at 112G",c:""},{l:"Stability Risk",v:"Peaking near BW limit",c:"r"},{l:"PMR Goal",v:"< 0.3 after",c:""}],
+      desc:"CTLE at 224G is limited to ~8–10 dB peaking (vs 15 dB at 112G). Peaking frequency must target 53 GHz Nyquist — near the circuit's own bandwidth limit — causing stability risk.",
+      dbgTitle:"CTLE Oscillating?",
+      dbg:"At 224G, CTLE peaking near circuit BW → instability. Reduce CTLE gain until stable. DSP FFE must compensate for limited CTLE. Adaptation algorithm must cap gain below stability limit."
+    },
+    {
+      dom:"Analog RX",cls:"ANA",name:"ADC",spd:"224G",
+      params:[{l:"Architecture",v:"TI-ADC N=16–32",c:"r"},{l:"ENOB",v:"4–5 bits",c:"r"},{l:"Sample Rate",v:"106.25 GSps",c:"r"},{l:"Power",v:"400–800 mW",c:"r"}],
+      desc:"Sample rate doubles to 106.25 GSps requiring N=16–32 TI sub-ADCs. ENOB degrades by ~1 bit vs 112G. Aperture jitter at 53 GHz input is 4× more damaging than at 112G.",
+      dbgTitle:"ENOB Low at 224G Nyquist?",
+      dbg:"Expected — 1 ps jitter causes 9.5 dB SNDR loss at 53 GHz vs 3.5 dB at 112G. TI calibration with 16–32 sub-ADCs takes longer. Check spurs at f_s/N harmonics more carefully."
+    },
+    {
+      dom:"Clock/CDR",cls:"CLK",name:"CDR",spd:"224G",
+      params:[{l:"VCO Options",v:"53G×2 or 106G direct",c:""},{l:"Symbol Period",v:"9.4 ps",c:"r"},{l:"Jitter budget",v:"Same fs = 2× worse",c:"r"},{l:"Loop BW",v:"More critical tradeoff",c:"r"}],
+      desc:"Symbol period halves to 9.4 ps. Same absolute jitter in femtoseconds represents twice the UI fraction. VCO at 106 GHz has worse phase noise. Check both PLL lock and multiplier lock.",
+      dbgTitle:"Eye Width Too Narrow at 224G?",
+      dbg:"9.4 ps symbol leaves very little horizontal margin. CDR phase noise is key — check phase noise spectrum. Loop BW tradeoff is more severe. Multiplier jitter adds to total."
+    },
+    {
+      dom:"Digital DSP",cls:"DSP",name:"Digital FFE",spd:"224G",
+      params:[{l:"Taps",v:"9–11",c:"r"},{l:"Pre-cursor taps",v:"3–5",c:"r"},{l:"Noise Enhancement",v:"Σ|wₖ|² < 4",c:""},{l:"Role",v:"Compensates CTLE limit",c:"r"}],
+      desc:"More taps needed (9–11 vs 7) for longer ISI profile at 2× baud. Also compensates for CTLE's reduced contribution at 224G. Higher noise enhancement factor — TX FFE even more important.",
+      dbgTitle:"Taps Slow to Converge at 224G?",
+      dbg:"More taps = larger optimization space = slower LMS. Increase training sequence length. Consider warm-start from previous adaptation. More pre-cursor taps needed (3–5 vs 3 at 112G)."
+    },
+    {
+      dom:"Digital DSP",cls:"DSP",name:"DFE",spd:"224G",
+      params:[{l:"Symbol Period",v:"9.4 ps",c:"r"},{l:"Timing Violation",v:"9.6× (vs 4.8× at 112G)",c:"r"},{l:"Unrolled Taps",v:"1,2,3 — 64 paths",c:"r"},{l:"Power",v:"4–8× vs 112G",c:"r"}],
+      desc:"9.4 ps symbol vs 90 ps loop = 9.6× timing violation. Taps 1, 2, AND 3 all need unrolling at 224G. For 3 unrolled PAM4 taps: 4³ = 64 parallel paths. Power scales dramatically.",
+      dbgTitle:"DFE Not Converging at 224G?",
+      dbg:"Same root causes as 112G but more severe — run CTLE first. Burst errors > 2–3 symbols = precoding problem (same as 112G). Expect higher DFE power vs 112G — this is normal."
+    },
+    {
+      dom:"Digital DSP",cls:"DSP",name:"Slicer",spd:"224G",
+      params:[{l:"Thresholds",v:"3 (same as 112G)",c:""},{l:"Q-factor Target",v:"≥ 4 (vs 5 at 112G)",c:"r"},{l:"Eye Width",v:"9.4 ps total",c:"r"},{l:"Pre-FEC BER",v:"≤ 2.4×10⁻⁴",c:"r"}],
+      desc:"Q-factor target relaxed to ≥ 4 (vs ≥ 5 at 112G) because 224G delivers less SNR margin. Eye width only 9.4 ps total. Threshold calibration accuracy is more critical at 224G.",
+      dbgTitle:"Smaller Eye Expected at 224G",
+      dbg:"Do not compare to 112G baseline directly — Q ≥ 4 is the 224G target. Threshold calibration is more critical at 224G (smaller eye means misalignment costs more). Monitor eye width independently."
+    },
+    {
+      dom:"FEC",cls:"FEC",name:"KP4 FEC",spd:"224G",
+      params:[{l:"Code",v:"RS(544,514) or stronger",c:""},{l:"Pre-FEC Limit",v:"2.4×10⁻⁴",c:"r"},{l:"Post-FEC",v:"~10⁻¹⁵",c:"g"},{l:"Latency",v:"~24 ns (halved!)",c:"g"}],
+      desc:"Same KP4 structure but harder to stay below the 2.4×10⁻⁴ cliff at 224G. Decoder latency halved to ~24 ns (same codeword at 2× data rate). Stronger FEC variants may be needed.",
+      dbgTitle:"224G Link Near Cliff?",
+      dbg:"Pre-FEC BER margin tighter at 224G — same cliff at 2.4×10⁻⁴. FEC correction count histogram will show more corrections/CW than 112G for same channel quality. Monitor trend."
+    },
+  ]
+};
+
+// ════════════════════════════
+// RENDER STAGE CARDS
+// ════════════════════════════
+
+function buildStageCards(spd) {
+  const container = document.getElementById(`stages-${spd}`);
+  const data = STAGES_DATA[spd];
+
+  // Group by domain
+  const domainOrder = ["TX Domain","Passive","Analog RX","Clock/CDR","Digital DSP","FEC"];
+  const grouped = {};
+  data.forEach(s => {
+    if (!grouped[s.dom]) grouped[s.dom] = [];
+    grouped[s.dom].push(s);
+  });
+
+  domainOrder.forEach(dom => {
+    if (!grouped[dom]) return;
+    container.innerHTML += `
+      <div class="section-hdr">
+        <div class="sh-line"></div>
+        <div class="sh-title">${dom}</div>
+        <div class="sh-line"></div>
+      </div>
+      <div class="stages-grid">
+        ${grouped[dom].map(s => buildCard(s, spd)).join('')}
+      </div>`;
+  });
+}
+
+function buildCard(s, spd) {
+  const badge = spd === "112" ? 'b112' : 'b224';
+  const badgeText = spd === "112" ? '112G' : '224G';
+
+  const paramHtml = s.params.map(p => `
+    <div class="sc-p">
+      <div class="sc-pl">${p.l}</div>
+      <div class="sc-pv ${p.c ? 'pv-'+p.c : ''}">${p.v}</div>
+    </div>`).join('');
+
+  return `
+    <div class="stage-card ${s.cls}">
+      <div class="sc-header">
+        <div class="sc-left">
+          <div class="sc-domain">${s.dom}</div>
+          <div class="sc-name">${s.name}</div>
+        </div>
+        <div class="sc-badge ${badge}">${badgeText}</div>
+      </div>
+      <div class="sc-body">
+        <div class="sc-params">${paramHtml}</div>
+        <div class="sc-desc">${s.desc}</div>
+        <div class="sc-dbg ${s.cls}">
+          <div class="dbg-title">⚠ ${s.dbgTitle}</div>
+          ${s.dbg}
+        </div>
+      </div>
+    </div>`;
+}
+
+buildStageCards("112");
+buildStageCards("224");
+
+// ════════════════════════════
+// PAGE NAVIGATION
+// ════════════════════════════
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+
+  const map = {overview:0, ref112:1, ref224:2, charts:3};
+  const btns = document.querySelectorAll('.tab-btn');
+  if (btns[map[id]]) btns[map[id]].classList.add('active');
+
+  if (id === 'charts') setTimeout(drawAllCharts, 100);
+  window.scrollTo(0,0);
+}
+
+// ════════════════════════════
+// CHART UTILITIES
+// ════════════════════════════
+const C112 = '#0066cc';
+const C224 = '#cc0044';
+const CGRID = '#e8e5e0';
+const CTEXT = '#444';
+
+function setupCanvas(id) {
+  const canvas = document.getElementById(id);
+  if (!canvas) return null;
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.parentElement.getBoundingClientRect();
+  const w = Math.floor(rect.width - 32);
+  const h = 220;
+  canvas.width = w * dpr;
+  canvas.height = h * dpr;
+  canvas.style.width = w + 'px';
+  canvas.style.height = h + 'px';
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  return {ctx, w, h};
+}
+
+function drawAxes(ctx, w, h, pad, xLabel, yLabel, xMin, xMax, yMin, yMax, xTicks, yTicks) {
+  ctx.clearRect(0, 0, w, h);
+  ctx.fillStyle = '#fafaf8';
+  ctx.fillRect(0, 0, w, h);
+  ctx.strokeStyle = CGRID;
+  ctx.lineWidth = 1;
+
+  // grid lines
+  yTicks.forEach(y => {
+    const py = pad.t + (yMax - y) / (yMax - yMin) * (h - pad.t - pad.b);
+    ctx.beginPath(); ctx.moveTo(pad.l, py); ctx.lineTo(w - pad.r, py); ctx.stroke();
+  });
+  xTicks.forEach(x => {
+    const px = pad.l + (x - xMin) / (xMax - xMin) * (w - pad.l - pad.r);
+    ctx.beginPath(); ctx.moveTo(px, pad.t); ctx.lineTo(px, h - pad.b); ctx.stroke();
+  });
+
+  // axes
+  ctx.strokeStyle = '#aaa';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.rect(pad.l, pad.t, w - pad.l - pad.r, h - pad.t - pad.b);
+  ctx.stroke();
+
+  // labels
+  ctx.fillStyle = CTEXT;
+  ctx.font = '10px IBM Plex Mono, monospace';
+  ctx.textAlign = 'right';
+  yTicks.forEach(y => {
+    const py = pad.t + (yMax - y) / (yMax - yMin) * (h - pad.t - pad.b);
+    ctx.fillText(y, pad.l - 4, py + 4);
+  });
+  ctx.textAlign = 'center';
+  xTicks.forEach(x => {
+    const px = pad.l + (x - xMin) / (xMax - xMin) * (w - pad.l - pad.r);
+    ctx.fillText(x, px, h - pad.b + 14);
+  });
+
+  // axis labels
+  ctx.font = '10px IBM Plex Sans, sans-serif';
+  ctx.fillStyle = '#888';
+  ctx.textAlign = 'center';
+  ctx.fillText(xLabel, pad.l + (w - pad.l - pad.r)/2, h - 2);
+  ctx.save();
+  ctx.translate(10, pad.t + (h - pad.t - pad.b)/2);
+  ctx.rotate(-Math.PI/2);
+  ctx.fillText(yLabel, 0, 0);
+  ctx.restore();
+
+  return {
+    toX: x => pad.l + (x - xMin) / (xMax - xMin) * (w - pad.l - pad.r),
+    toY: y => pad.t + (yMax - y) / (yMax - yMin) * (h - pad.t - pad.b)
+  };
+}
+
+function drawLine(ctx, pts, color, dash=[]) {
+  if (!pts.length) return;
+  ctx.save();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 2;
+  ctx.setLineDash(dash);
+  ctx.beginPath();
+  pts.forEach((p,i) => i===0 ? ctx.moveTo(p[0],p[1]) : ctx.lineTo(p[0],p[1]));
+  ctx.stroke();
+  ctx.restore();
+}
+
+function label(ctx, x, y, text, color='#333', align='left') {
+  ctx.save();
+  ctx.font = '10px IBM Plex Mono, monospace';
+  ctx.fillStyle = color;
+  ctx.textAlign = align;
+  ctx.fillText(text, x, y);
+  ctx.restore();
+}
+
+function marker(ctx, x, y, txt, color) {
+  ctx.save();
+  ctx.strokeStyle = color;
+  ctx.fillStyle = color;
+  ctx.lineWidth = 1;
+  ctx.setLineDash([3,3]);
+  ctx.beginPath(); ctx.moveTo(x, y+20); ctx.lineTo(x, y-8); ctx.stroke();
+  ctx.font = '9px IBM Plex Mono, monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText(txt, x, y-10);
+  ctx.restore();
+}
+
+// ════════════════════════════
+// DRAW ALL CHARTS
+// ════════════════════════════
+let chartsDrawn = false;
+
+function drawAllCharts() {
+  if (chartsDrawn) return;
+  chartsDrawn = true;
+  drawIL();
+  drawRL();
+  drawTDR();
+  drawEye();
+  drawSNR();
+  drawReach();
+  drawXtalk();
+  drawFEC();
+  drawPN();
+  drawJTOL();
+  drawHist();
+  drawPulse();
+}
+
+// INSERTION LOSS
+function drawIL() {
+  const d = setupCanvas('c-il'); if (!d) return;
+  const {ctx,w,h} = d;
+  const pad = {l:42, t:12, r:20, b:30};
+  const sc = drawAxes(ctx,w,h,pad,'Frequency (GHz)','IL (dB)',0,60,-50,0,[0,10,20,26.5,30,40,53.1,60],[-50,-40,-30,-20,-10,0]);
+
+  // skin + dielectric loss model
+  const freqs = Array.from({length:200}, (_,i) => i*60/200);
+
+  // 112G trace: IL = -(3*sqrt(f) + 0.04*f) * length_factor
+  const pts112 = freqs.map(f => [sc.toX(f), sc.toY(Math.max(-50, -(2.8*Math.sqrt(f) + 0.05*f + 0.3*f/60)))]);
+  const pts224 = freqs.map(f => [sc.toX(f), sc.toY(Math.max(-50, -(3.8*Math.sqrt(f) + 0.08*f + 0.5*f/60)))]);
+
+  // pass masks
+  const mask112_x = [sc.toX(0),sc.toX(26.5),sc.toX(26.5)];
+  const mask112_y = [sc.toY(-28),sc.toY(-28),sc.toY(-50)];
+  ctx.save();
+  ctx.strokeStyle='#aaa'; ctx.lineWidth=1; ctx.setLineDash([4,3]);
+  ctx.beginPath();
+  ctx.moveTo(sc.toX(0), sc.toY(-30)); ctx.lineTo(sc.toX(26.5), sc.toY(-30));
+  ctx.moveTo(sc.toX(0), sc.toY(-40)); ctx.lineTo(sc.toX(53.1), sc.toY(-40));
+  ctx.stroke();
+  ctx.restore();
+
+  drawLine(ctx, pts112, C112);
+  drawLine(ctx, pts224, C224);
+
+  // nyquist markers
+  marker(ctx, sc.toX(26.5), sc.toY(-28), '112G Nyquist\n26.5 GHz', C112);
+  marker(ctx, sc.toX(53.1), sc.toY(-42), '224G Nyquist\n53 GHz', C224);
+
+  label(ctx, sc.toX(20), sc.toY(-15), '~−28 dB', C112);
+  label(ctx, sc.toX(40), sc.toY(-38), '~−42 dB', C224);
+}
+
+// RETURN LOSS
+function drawRL() {
+  const d = setupCanvas('c-rl'); if (!d) return;
+  const {ctx,w,h} = d;
+  const pad = {l:42, t:12, r:20, b:30};
+  const sc = drawAxes(ctx,w,h,pad,'Frequency (GHz)','Return Loss (dB)',0,60,0,40,[0,10,18,26.5,40,53.1,60],[0,5,10,12,15,20,25,30,40]);
+
+  // Good return loss + via stub notch
+  const freqs = Array.from({length:300}, (_,i) => i*60/300);
+
+  // good RL slowly degrading, with via stub dip at ~18 GHz for 112G, ~9 GHz for 224G
+  const goodRL = f => Math.max(0, 28 - 0.3*f - 8*Math.exp(-Math.pow((f-18)/2,2)));
+  const badRL  = f => Math.max(0, 22 - 0.5*f - 10*Math.exp(-Math.pow((f-9)/1.5,2)) - 6*Math.exp(-Math.pow((f-18)/2,2)));
+
+  const pts112 = freqs.map(f => [sc.toX(f), sc.toY(goodRL(f))]);
+  const pts224 = freqs.map(f => [sc.toX(f), sc.toY(badRL(f))]);
+
+  // 12 dB spec line
+  drawLine(ctx, [[sc.toX(0),sc.toY(12)],[sc.toX(60),sc.toY(12)]], '#aaa', [5,4]);
+  label(ctx, sc.toX(50), sc.toY(13), '12 dB spec', '#888');
+
+  drawLine(ctx, pts112, C112);
+  drawLine(ctx, pts224, C224);
+
+  label(ctx, sc.toX(18)+4, sc.toY(10), 'Via stub resonance\n2mm → 18 GHz', '#888');
+  label(ctx, sc.toX(9)+4, sc.toY(5), '1mm stub\n→ 9 GHz', C224);
+}
+
+// TDR
+function drawTDR() {
+  const d = setupCanvas('c-tdr'); if (!d) return;
+  const {ctx,w,h} = d;
+  const pad = {l:50, t:12, r:20, b:30};
+  const sc = drawAxes(ctx,w,h,pad,'Distance (cm)','Impedance (Ω)',0,25,30,70,[0,2,4,6,8,10,12,15,18,20,25],[30,40,50,55,60,70]);
+
+  // 50 ohm target
+  drawLine(ctx, [[sc.toX(0),sc.toY(50)],[sc.toX(25),sc.toY(50)]], '#cc2233', [5,4]);
+  label(ctx, sc.toX(24), sc.toY(51.5), '50 Ω', '#cc2233', 'right');
+
+  // TDR trace — good channel with annotations
+  const tdrPts = [
+    [0,50],[1.8,50],[1.8,55],[2.2,55],[2.2,50],   // connector launch bump
+    [2.2,50],[6,50],                                 // clean trace
+    [6,44],[6.3,44],[6.3,50],                        // via stub dip
+    [6.3,50],[10,50],                                // trace
+    [10,56],[10.4,56],[10.4,50],                     // connector 2
+    [10.4,50],[18,50],                               // long trace
+    [18,50],[18.2,48],[18.5,50],[18.8,52],[19,50],  // small ripple
+    [19,50],[25,50]
+  ];
+
+  const pts = tdrPts.map(([x,y]) => [sc.toX(x), sc.toY(y)]);
+  drawLine(ctx, pts, '#333');
+
+  // annotations
+  const an = (x, y, txt, dy=0) => {
+    ctx.save();
+    ctx.strokeStyle='#bbb'; ctx.lineWidth=1; ctx.setLineDash([2,2]);
+    ctx.beginPath(); ctx.moveTo(sc.toX(x), sc.toY(y)); ctx.lineTo(sc.toX(x), sc.toY(y)+20+dy); ctx.stroke();
+    ctx.font='9px IBM Plex Mono, monospace'; ctx.fillStyle='#555'; ctx.textAlign='center';
+    ctx.fillText(txt, sc.toX(x), sc.toY(y)+32+dy);
+    ctx.restore();
+  };
+  an(2.0, 55, 'Connector\n+5Ω inductive');
+  an(6.15, 44, 'Via stub\ncap −6Ω');
+  an(10.2, 56, 'Connector 2\n+6Ω');
+
+  label(ctx, sc.toX(1), sc.toY(58), 'TDR trace', '#333');
+}
+
+// EYE DIAGRAM
+function drawEye() {
+  const d = setupCanvas('c-eye'); if (!d) return;
+  const {ctx,w,h} = d;
+  const pad = {l:50, t:16, r:20, b:30};
+
+  ctx.clearRect(0,0,w,h);
+  ctx.fillStyle='#fafaf8';
+  ctx.fillRect(0,0,w,h);
+
+  const ew = w - pad.l - pad.r;
+  const eh = h - pad.t - pad.b;
+  const cx = pad.l + ew/2;
+  const cy = pad.t + eh/2;
+
+  // Y axis
+  ctx.strokeStyle='#aaa'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.rect(pad.l, pad.t, ew, eh); ctx.stroke();
+
+  // Draw PAM4 eye for 112G and 224G
+  function drawEyes(scaleH, scaleW, color, opacity) {
+    ctx.save();
+    ctx.globalAlpha = opacity;
+
+    const eH = eh * 0.18 * scaleH; // single eye height
+    const eW = ew * 0.55 * scaleW; // eye width
+
+    // 3 eye openings at different vertical positions
+    const centerYs = [cy - eh*0.27, cy, cy + eh*0.27];
+
+    centerYs.forEach(eyeY => {
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 1.5;
+
+      // Left diamond
+      ctx.beginPath();
+      ctx.moveTo(cx - eW/2, eyeY);
+      ctx.lineTo(cx - eW*0.05, eyeY - eH/2);
+      ctx.lineTo(cx, eyeY);
+      ctx.lineTo(cx - eW*0.05, eyeY + eH/2);
+      ctx.closePath();
+      ctx.stroke();
+
+      // Right diamond
+      ctx.beginPath();
+      ctx.moveTo(cx, eyeY);
+      ctx.lineTo(cx + eW*0.05, eyeY - eH/2);
+      ctx.lineTo(cx + eW/2, eyeY);
+      ctx.lineTo(cx + eW*0.05, eyeY + eH/2);
+      ctx.closePath();
+      ctx.stroke();
+
+      // horizontal eye opening lines
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 2;
+      ctx.setLineDash([]);
+      ctx.beginPath();
+      ctx.moveTo(cx - eW*0.38, eyeY - eH*0.4);
+      ctx.lineTo(cx + eW*0.38, eyeY - eH*0.4);
+      ctx.moveTo(cx - eW*0.38, eyeY + eH*0.4);
+      ctx.lineTo(cx + eW*0.38, eyeY + eH*0.4);
+      ctx.stroke();
+    });
+
+    ctx.restore();
+  }
+
+  drawEyes(1.0, 1.0, C112, 0.7);
+  drawEyes(0.6, 0.7, C224, 0.7);
+
+  // Thresholds
+  [cy - eh*0.135, cy + eh*0.135].forEach(y => {
+    ctx.save();
+    ctx.strokeStyle='#cc2233'; ctx.lineWidth=1; ctx.setLineDash([4,3]);
+    ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(w-pad.r, y); ctx.stroke();
+    ctx.restore();
+  });
+
+  // Labels
+  ctx.font='10px IBM Plex Mono, monospace'; ctx.textAlign='left';
+  ctx.fillStyle = C112; ctx.fillText('112G eye', pad.l+4, pad.t+12);
+  ctx.fillStyle = C224; ctx.fillText('224G eye (smaller)', pad.l+4, pad.t+24);
+  ctx.fillStyle = '#cc2233'; ctx.fillText('Threshold', w-pad.r-4, cy-eh*0.135-4);
+  ctx.textAlign='right';
+
+  // Axis labels
+  ctx.fillStyle='#888'; ctx.font='10px IBM Plex Sans, sans-serif'; ctx.textAlign='center';
+  ctx.fillText('Time →', pad.l+ew/2, h-2);
+  ctx.save(); ctx.translate(10, pad.t+eh/2); ctx.rotate(-Math.PI/2);
+  ctx.fillText('Amplitude', 0, 0); ctx.restore();
+
+  // Eye height annotation
+  const eyeH112 = eh*0.18;
+  ctx.save();
+  ctx.strokeStyle='#0066cc'; ctx.lineWidth=1;
+  const bx = pad.l + ew*0.12;
+  const by1 = cy - eyeH112*0.4;
+  const by2 = cy + eyeH112*0.4;
+  ctx.beginPath();
+  ctx.moveTo(bx, by1); ctx.lineTo(bx, by2);
+  ctx.moveTo(bx-4, by1); ctx.lineTo(bx+4, by1);
+  ctx.moveTo(bx-4, by2); ctx.lineTo(bx+4, by2);
+  ctx.stroke();
+  ctx.font='9px IBM Plex Mono'; ctx.fillStyle=C112; ctx.textAlign='left';
+  ctx.fillText('Vppd/6', bx+6, cy+4);
+  ctx.restore();
+}
+
+// SNR WATERFALL
+function drawSNR() {
+  const d = setupCanvas('c-snr'); if (!d) return;
+  const {ctx,w,h} = d;
+  const pad = {l:50, t:12, r:20, b:44};
+
+  ctx.clearRect(0,0,w,h);
+  ctx.fillStyle='#fafaf8'; ctx.fillRect(0,0,w,h);
+
+  const stages = ['TX\nSwing','Channel\nIL','AFE\nNF','CTLE\nNoise','FFE\nNoise','ADC\nQuant','Resid\nISI','→ FEC\nMargin'];
+  const budgets112 = [35, -22, -3, -2.5, -2, -1.5, -1, 3]; // SNR values after each stage
+  const budgets224 = [30, -28, -3.5, -1.5, -2.5, -2, -1.5, -1]; // tighter
+
+  const n = stages.length;
+  const bw = (w - pad.l - pad.r - (n-1)*6) / n;
+  const yRange = 40;
+  const yMin = -15;
+  const yMax = 38;
+
+  const toY = val => pad.t + (yMax-val)/(yMax-yMin) * (h - pad.t - pad.b);
+  const toX = i => pad.l + i*(bw+6);
+
+  // grid
+  [0, 10, 20, 30].forEach(y => {
+    ctx.strokeStyle=CGRID; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(pad.l, toY(y)); ctx.lineTo(w-pad.r, toY(y)); ctx.stroke();
+    ctx.font='9px IBM Plex Mono'; ctx.fillStyle=CTEXT; ctx.textAlign='right';
+    ctx.fillText(y+' dB', pad.l-4, toY(y)+4);
+  });
+
+  // zero line
+  ctx.strokeStyle='#aaa'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(pad.l, toY(0)); ctx.lineTo(w-pad.r, toY(0)); ctx.stroke();
+
+  // compute cumulative SNR
+  let snr112 = 0; let snr224 = 0;
+  const cum112 = []; const cum224 = [];
+  budgets112.forEach(v => { snr112 += v; cum112.push(snr112); });
+  budgets224.forEach(v => { snr224 += v; cum224.push(snr224); });
+
+  stages.forEach((st, i) => {
+    const x = toX(i);
+    const y112 = toY(cum112[i]);
+    const y224 = toY(cum224[i]);
+
+    // bars
+    ctx.fillStyle = C112 + '22';
+    ctx.fillRect(x, Math.min(y112, toY(0)), bw/2-1, Math.abs(y112-toY(0)));
+    ctx.fillStyle = C112; ctx.lineWidth=1.5;
+    ctx.strokeRect(x, Math.min(y112, toY(0)), bw/2-1, Math.abs(y112-toY(0)));
+
+    ctx.fillStyle = C224 + '22';
+    ctx.fillRect(x+bw/2+1, Math.min(y224, toY(0)), bw/2-1, Math.abs(y224-toY(0)));
+    ctx.fillStyle = C224;
+    ctx.strokeRect(x+bw/2+1, Math.min(y224, toY(0)), bw/2-1, Math.abs(y224-toY(0)));
+
+    // stage labels
+    ctx.font='8px IBM Plex Sans'; ctx.fillStyle='#666'; ctx.textAlign='center';
+    const lines = st.split('\n');
+    lines.forEach((l,li) => ctx.fillText(l, x+bw/2, h - pad.b + 12 + li*10));
+  });
+
+  // FEC cliff level annotation
+  ctx.save();
+  ctx.strokeStyle='#cc2233'; ctx.lineWidth=1.5; ctx.setLineDash([5,3]);
+  ctx.beginPath(); ctx.moveTo(pad.l, toY(5)); ctx.lineTo(w-pad.r, toY(5)); ctx.stroke();
+  ctx.font='9px IBM Plex Mono'; ctx.fillStyle='#cc2233'; ctx.textAlign='right'; ctx.setLineDash([]);
+  ctx.fillText('KP4 minimum margin', w-pad.r-4, toY(5)-4);
+  ctx.restore();
+
+  ctx.font='9px IBM Plex Mono'; ctx.textAlign='left';
+  ctx.fillStyle=C112; ctx.fillText('■ 112G', pad.l, pad.t+12);
+  ctx.fillStyle=C224; ctx.fillText('■ 224G', pad.l+50, pad.t+12);
+}
+
+// BER vs REACH
+function drawReach() {
+  const d = setupCanvas('c-reach'); if (!d) return;
+  const {ctx,w,h} = d;
+  const pad = {l:50, t:12, r:20, b:30};
+  const sc = drawAxes(ctx,w,h,pad,'Channel Length (cm)','Pre-FEC BER',0,20,1e-8,1e-1,[0,2,4,6,8,10,12,15,20],[]);
+
+  // log scale Y
+  const toY = val => {
+    const logMin = -8; const logMax = -1;
+    const logVal = Math.log10(Math.max(1e-9, val));
+    return pad.t + (logMax - logVal) / (logMax - logMin) * (h - pad.t - pad.b);
+  };
+  const toX = x => pad.l + x/20 * (w-pad.l-pad.r);
+
+  // Y labels
+  [-8,-7,-6,-5,-4,-3,-2,-1].forEach(e => {
+    const y = toY(Math.pow(10,e));
+    ctx.fillStyle=CTEXT; ctx.font='9px IBM Plex Mono'; ctx.textAlign='right';
+    ctx.fillText(`10${['⁻⁸','⁻⁷','⁻⁶','⁻⁵','⁻⁴','⁻³','⁻²','⁻¹'][e+8]}`, pad.l-4, y+4);
+    ctx.strokeStyle=CGRID; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(w-pad.r, y); ctx.stroke();
+  });
+
+  // KP4 cliff line
+  const cliffY = toY(2.4e-4);
+  drawLine(ctx, [[toX(0),cliffY],[toX(20),cliffY]], '#cc2233', [5,4]);
+  label(ctx, toX(19), cliffY-5, '2.4×10⁻⁴', '#cc2233', 'right');
+
+  // BER curves: exponential rise with length
+  const ber112 = x => Math.min(0.1, 1e-9 * Math.pow(10, x*0.7));
+  const ber224 = x => Math.min(0.1, 1e-9 * Math.pow(10, x*1.3));
+
+  const xs = Array.from({length:100}, (_,i) => i*20/100);
+  drawLine(ctx, xs.map(x => [toX(x), toY(ber112(x))]), C112);
+  drawLine(ctx, xs.map(x => [toX(x), toY(ber224(x))]), C224);
+
+  // cliff crossing markers
+  const cross112 = xs.find(x => ber112(x) >= 2.4e-4);
+  const cross224 = xs.find(x => ber224(x) >= 2.4e-4);
+  if (cross112) {
+    ctx.fillStyle=C112; ctx.beginPath(); ctx.arc(toX(cross112), cliffY, 5, 0, Math.PI*2); ctx.fill();
+    label(ctx, toX(cross112)+6, cliffY+14, `~${cross112.toFixed(0)}cm`, C112);
+  }
+  if (cross224) {
+    ctx.fillStyle=C224; ctx.beginPath(); ctx.arc(toX(cross224), cliffY, 5, 0, Math.PI*2); ctx.fill();
+    label(ctx, toX(cross224)+6, cliffY-10, `~${cross224.toFixed(0)}cm`, C224);
+  }
+
+  label(ctx, toX(1), toY(1e-7), '112G', C112);
+  label(ctx, toX(1), toY(1e-5), '224G', C224);
+}
+
+// CROSSTALK
+function drawXtalk() {
+  const d = setupCanvas('c-xtalk'); if (!d) return;
+  const {ctx,w,h} = d;
+  const pad = {l:50, t:12, r:20, b:30};
+  const sc = drawAxes(ctx,w,h,pad,'Frequency (GHz)','Crosstalk (dBc)',0,60,-80,0,[0,10,20,26.5,30,40,53.1,60],[-80,-70,-60,-50,-40,-30,-20,-10,0]);
+
+  const freqs = Array.from({length:200}, (_,i) => i*60/200);
+
+  // FEXT: rises with freq, 224G worse
+  const fext112 = f => Math.max(-80, -68 + 0.3*f + 0.002*f*f);
+  const fext224 = f => Math.max(-80, -62 + 0.4*f + 0.003*f*f);
+  // NEXT: generally worse than FEXT
+  const next = f => Math.max(-80, -55 + 0.2*f + 0.001*f*f);
+
+  drawLine(ctx, freqs.map(f=>[sc.toX(f),sc.toY(fext112(f))]), C112);
+  drawLine(ctx, freqs.map(f=>[sc.toX(f),sc.toY(fext224(f))]), C224);
+  drawLine(ctx, freqs.map(f=>[sc.toX(f),sc.toY(next(f))]), '#888', [4,3]);
+
+  // Nyquist markers
+  const ny112 = sc.toX(26.5); const ny224 = sc.toX(53.1);
+  ctx.save(); ctx.strokeStyle=C112; ctx.lineWidth=1; ctx.setLineDash([3,3]);
+  ctx.beginPath(); ctx.moveTo(ny112,pad.t); ctx.lineTo(ny112,h-pad.b); ctx.stroke();
+  ctx.strokeStyle=C224;
+  ctx.beginPath(); ctx.moveTo(ny224,pad.t); ctx.lineTo(ny224,h-pad.b); ctx.stroke();
+  ctx.restore();
+
+  label(ctx, ny112+4, pad.t+14, '112G Nyq', C112);
+  label(ctx, ny224-4, pad.t+14, '224G Nyq', C224, 'right');
+
+  label(ctx, sc.toX(50), sc.toY(fext112(50))+12, 'FEXT 112G', C112);
+  label(ctx, sc.toX(50), sc.toY(fext224(50))-8, 'FEXT 224G', C224);
+  label(ctx, sc.toX(45), sc.toY(next(45))+12, 'NEXT', '#666');
+}
+
+// FEC CORRECTION HISTOGRAM
+function drawFEC() {
+  const d = setupCanvas('c-fec'); if (!d) return;
+  const {ctx,w,h} = d;
+  const pad = {l:50, t:12, r:20, b:30};
+
+  ctx.clearRect(0,0,w,h);
+  ctx.fillStyle='#fafaf8'; ctx.fillRect(0,0,w,h);
+  ctx.strokeStyle='#aaa'; ctx.lineWidth=1;
+  ctx.strokeRect(pad.l, pad.t, w-pad.l-pad.r, h-pad.t-pad.b);
+
+  const corrections = Array.from({length:16}, (_,i) => i);
+  const bw = (w - pad.l - pad.r) / 17;
+
+  // distributions
+  const dist112healthy = corrections.map(i => i===0 ? 0.94 : i===1 ? 0.04 : i===2 ? 0.015 : 0.001);
+  const dist224typical = corrections.map(i => {
+    const v = [0.75, 0.1, 0.06, 0.04, 0.025, 0.015, 0.01, 0.005, 0.003, 0.002, 0.001, 0.001, 0.0008, 0.0005, 0.0003, 0.0002][i];
+    return v;
+  });
+  const distDegraded  = corrections.map(i => {
+    const v = [0.3, 0.15, 0.1, 0.09, 0.07, 0.06, 0.05, 0.04, 0.03, 0.03, 0.02, 0.015, 0.01, 0.01, 0.008, 0.007][i];
+    return v;
+  });
+
+  const maxVal = 0.94;
+  const toY = v => h - pad.b - v/maxVal * (h-pad.t-pad.b) * 0.9;
+  const toX = i => pad.l + (i+0.5) * bw;
+
+  corrections.forEach(i => {
+    const x = pad.l + i * bw;
+    const h112 = dist112healthy[i]/maxVal * (h-pad.t-pad.b)*0.9;
+    const h224 = dist224typical[i]/maxVal * (h-pad.t-pad.b)*0.9;
+    const hDeg = distDegraded[i]/maxVal * (h-pad.t-pad.b)*0.9;
+
+    ctx.fillStyle=C112+'33'; ctx.strokeStyle=C112; ctx.lineWidth=1;
+    ctx.fillRect(x+1, h-pad.b-h112, bw/3-1, h112);
+    ctx.strokeRect(x+1, h-pad.b-h112, bw/3-1, h112);
+
+    ctx.fillStyle=C224+'33'; ctx.strokeStyle=C224;
+    ctx.fillRect(x+bw/3+1, h-pad.b-h224, bw/3-1, h224);
+    ctx.strokeRect(x+bw/3+1, h-pad.b-h224, bw/3-1, h224);
+
+    ctx.fillStyle='#cc223333'; ctx.strokeStyle='#cc2233';
+    ctx.fillRect(x+bw*2/3+1, h-pad.b-hDeg, bw/3-1, hDeg);
+    ctx.strokeRect(x+bw*2/3+1, h-pad.b-hDeg, bw/3-1, hDeg);
+
+    // X labels
+    ctx.font='9px IBM Plex Mono'; ctx.fillStyle='#666'; ctx.textAlign='center';
+    if (i%2===0 || i===15) ctx.fillText(i, x+bw/2, h-pad.b+12);
+  });
+
+  // Cliff marker at 15
+  const cliffX = pad.l + 15.5*bw;
+  ctx.save(); ctx.strokeStyle='#cc2233'; ctx.lineWidth=1.5; ctx.setLineDash([3,2]);
+  ctx.beginPath(); ctx.moveTo(cliffX, pad.t); ctx.lineTo(cliffX, h-pad.b); ctx.stroke();
+  ctx.font='9px IBM Plex Mono'; ctx.fillStyle='#cc2233'; ctx.textAlign='right'; ctx.setLineDash([]);
+  ctx.fillText('← cliff', cliffX-2, pad.t+16);
+  ctx.restore();
+
+  // Y axis
+  [0,0.2,0.4,0.6,0.8,1.0].forEach(f => {
+    const y = h - pad.b - f*0.9*(h-pad.t-pad.b);
+    ctx.font='9px IBM Plex Mono'; ctx.fillStyle=CTEXT; ctx.textAlign='right';
+    ctx.fillText(Math.round(f*maxVal*100)+'%', pad.l-4, y+4);
+  });
+
+  ctx.font='10px IBM Plex Sans'; ctx.textAlign='center'; ctx.fillStyle='#888';
+  ctx.fillText('Corrections per Codeword', pad.l+(w-pad.l-pad.r)/2, h-2);
+
+  label(ctx, pad.l+4, pad.t+12, '■ 112G healthy', C112);
+  label(ctx, pad.l+4, pad.t+24, '■ 224G typical', C224);
+  label(ctx, pad.l+4, pad.t+36, '■ Degraded link', '#cc2233');
+}
+
+// PHASE NOISE
+function drawPN() {
+  const d = setupCanvas('c-pn'); if (!d) return;
+  const {ctx,w,h} = d;
+  const pad = {l:50, t:12, r:20, b:30};
+  const sc = drawAxes(ctx,w,h,pad,'Offset Freq (MHz)','Phase Noise (dBc/Hz)',0.01,100,-140,-80,[0.01,0.1,1,10,100],[-140,-130,-120,-110,-100,-90,-80]);
+
+  // log scale X
+  const toX = f => pad.l + (Math.log10(f)-Math.log10(0.01))/(Math.log10(100)-Math.log10(0.01)) * (w-pad.l-pad.r);
+  const toY = val => pad.t + (-80-val)/(-80-(-140)) * (h-pad.t-pad.b);
+
+  // X log labels
+  [0.01,0.1,1,10,100].forEach(f => {
+    ctx.font='9px IBM Plex Mono'; ctx.fillStyle=CTEXT; ctx.textAlign='center';
+    ctx.fillText(f<1?f:f+'', toX(f), h-pad.b+14);
+    ctx.strokeStyle=CGRID; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(toX(f),pad.t); ctx.lineTo(toX(f),h-pad.b); ctx.stroke();
+  });
+
+  // PN curves: 1/f slope + noise floor
+  const pn112 = f => Math.max(-138, -108 - 30*Math.log10(f));
+  const pn224 = f => Math.max(-132, -102 - 30*Math.log10(f));  // ~6 dB worse
+
+  const freqs = Array.from({length:200}, (_,i) => 0.01 * Math.pow(10, i*4/200));
+  drawLine(ctx, freqs.map(f=>[toX(f),toY(pn112(f))]), C112);
+  drawLine(ctx, freqs.map(f=>[toX(f),toY(pn224(f))]), C224);
+
+  // annotations
+  label(ctx, toX(1)-4, toY(pn112(1))-8, '112G: −110 dBc/Hz @1MHz', C112);
+  label(ctx, toX(1)-4, toY(pn224(1))+14, '224G: −104 dBc/Hz @1MHz', C224);
+  label(ctx, toX(50), toY(-90), '~6 dB worse', '#888');
+}
+
+// JITTER TOLERANCE
+function drawJTOL() {
+  const d = setupCanvas('c-jtol'); if (!d) return;
+  const {ctx,w,h} = d;
+  const pad = {l:50, t:12, r:20, b:30};
+
+  ctx.clearRect(0,0,w,h);
+  ctx.fillStyle='#fafaf8'; ctx.fillRect(0,0,w,h);
+  ctx.strokeStyle='#aaa'; ctx.lineWidth=1;
+  ctx.strokeRect(pad.l,pad.t,w-pad.l-pad.r,h-pad.t-pad.b);
+
+  // log freq axis
+  const toX = f => pad.l + Math.log10(f/0.01)/Math.log10(1000/0.01) * (w-pad.l-pad.r);
+  const toY = ui => pad.t + (2-ui)/1.9 * (h-pad.t-pad.b);
+
+  // grid
+  [0.01,0.1,1,10,100,1000].forEach(f => {
+    ctx.strokeStyle=CGRID; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(toX(f),pad.t); ctx.lineTo(toX(f),h-pad.b); ctx.stroke();
+    ctx.font='9px IBM Plex Mono'; ctx.fillStyle=CTEXT; ctx.textAlign='center';
+    ctx.fillText(f<1?f:f+'', toX(f), h-pad.b+14);
+  });
+  [0.1,0.3,0.5,1.0,1.5,2.0].forEach(ui => {
+    ctx.strokeStyle=CGRID; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(pad.l,toY(ui)); ctx.lineTo(w-pad.r,toY(ui)); ctx.stroke();
+    ctx.font='9px IBM Plex Mono'; ctx.fillStyle=CTEXT; ctx.textAlign='right';
+    ctx.fillText(ui.toFixed(1)+' UI', pad.l-4, toY(ui)+4);
+  });
+
+  // JTOL curves: flat at high JTOL, then drops at CDR BW crossover
+  const jtol = (f, bw, maxUI) => f < bw ? maxUI : maxUI * (bw/f);
+
+  const freqs = Array.from({length:200}, (_,i) => 0.01 * Math.pow(10, i*Math.log10(1000/0.01)/200));
+  drawLine(ctx, freqs.map(f=>[toX(f), toY(jtol(f, 5, 1.8))]), C112);
+  drawLine(ctx, freqs.map(f=>[toX(f), toY(jtol(f, 5, 1.4))]), C224);
+
+  // IEEE spec masks (simplified)
+  ctx.save(); ctx.strokeStyle=C112; ctx.lineWidth=1; ctx.setLineDash([3,3]);
+  ctx.globalAlpha=0.5;
+  drawLine(ctx, [[toX(0.01),toY(1.5)],[toX(0.5),toY(1.5)],[toX(5),toY(0.3)],[toX(1000),toY(0.03)]], C112, []);
+  ctx.globalAlpha=0.5;
+  drawLine(ctx, [[toX(0.01),toY(1.2)],[toX(0.5),toY(1.2)],[toX(5),toY(0.2)],[toX(1000),toY(0.02)]], C224, []);
+  ctx.restore();
+
+  label(ctx, toX(0.05), toY(1.85), '112G JTOL', C112);
+  label(ctx, toX(0.05), toY(1.45), '224G JTOL', C224);
+  label(ctx, toX(200), toY(0.3), '(in UI)', '#888');
+
+  ctx.font='10px IBM Plex Sans'; ctx.fillStyle='#888'; ctx.textAlign='center';
+  ctx.fillText('Jitter Frequency (MHz)', pad.l+(w-pad.l-pad.r)/2, h-2);
+  ctx.save(); ctx.translate(10, pad.t+(h-pad.t-pad.b)/2); ctx.rotate(-Math.PI/2);
+  ctx.fillText('Tolerance (UI)', 0, 0); ctx.restore();
+}
+
+// ADC HISTOGRAM
+function drawHist() {
+  const d = setupCanvas('c-hist'); if (!d) return;
+  const {ctx,w,h} = d;
+  const pad = {l:50, t:12, r:20, b:30};
+
+  ctx.clearRect(0,0,w,h);
+  ctx.fillStyle='#fafaf8'; ctx.fillRect(0,0,w,h);
+  ctx.strokeStyle='#aaa'; ctx.lineWidth=1;
+  ctx.strokeRect(pad.l,pad.t,w-pad.l-pad.r,h-pad.t-pad.b);
+
+  const bins = 64;
+  const bw = (w-pad.l-pad.r) / bins;
+
+  const gauss = (x, mu, sig) => Math.exp(-0.5*Math.pow((x-mu)/sig,2));
+
+  bins_arr = Array.from({length:bins}, (_,i) => i - bins/2);
+
+  // optimal: nice bell
+  const optVals = bins_arr.map(x => gauss(x,0,10) * 0.9);
+  // low gain: narrow
+  const lowVals = bins_arr.map(x => gauss(x,0,5) * 0.6);
+  // clipping: flat top + wall at edges
+  const clipVals = bins_arr.map((x,i) => {
+    if (i < 4 || i > bins-5) return 0.85;
+    return gauss(x,0,8) * 0.8;
+  });
+
+  const maxV = 0.9;
+  const toY = v => pad.t + (1-v/maxV)*(h-pad.t-pad.b)*0.95;
+  const toX = i => pad.l + i*bw;
+
+  [optVals, lowVals, clipVals].forEach((vals, di) => {
+    const colors = ['#22aa55','#eaa500','#cc2233'];
+    const alphas = ['33','33','33'];
+    ctx.fillStyle = colors[di]+alphas[di];
+    ctx.strokeStyle = colors[di];
+    ctx.lineWidth = di===1 ? 1 : 1.5;
+    ctx.setLineDash(di===1?[4,3]:[]);
+    ctx.beginPath();
+    vals.forEach((v,i) => {
+      const x = toX(i);
+      const y = toY(v);
+      if (i===0) ctx.moveTo(x, h-pad.b);
+      ctx.lineTo(x, y);
+      ctx.lineTo(x+bw, y);
+    });
+    ctx.lineTo(toX(bins), h-pad.b);
+    ctx.closePath();
+    ctx.fill(); ctx.stroke();
+    ctx.setLineDash([]);
+  });
+
+  // Clipping arrows at rails
+  ctx.fillStyle='#cc2233'; ctx.font='10px IBM Plex Mono'; ctx.textAlign='center';
+  ctx.fillText('CLIPPING!', pad.l+bw*2.5, pad.t+18);
+  ctx.fillText('CLIPPING!', w-pad.r-bw*2.5, pad.t+18);
+
+  ctx.font='9px IBM Plex Mono'; ctx.textAlign='left';
+  ctx.fillStyle='#22aa55'; ctx.fillText('■ Optimal', pad.l+4, pad.t+12);
+  ctx.fillStyle='#eaa500'; ctx.fillText('■ Low gain', pad.l+4, pad.t+24);
+  ctx.fillStyle='#cc2233'; ctx.fillText('■ Clipping', pad.l+4, pad.t+36);
+
+  ctx.font='10px IBM Plex Sans'; ctx.fillStyle='#888'; ctx.textAlign='center';
+  ctx.fillText('ADC Output Code', pad.l+(w-pad.l-pad.r)/2, h-2);
+  ctx.save(); ctx.translate(10, pad.t+(h-pad.t-pad.b)/2); ctx.rotate(-Math.PI/2);
+  ctx.fillText('Count (normalized)', 0, 0); ctx.restore();
+}
+
+// PULSE RESPONSE
+function drawPulse() {
+  const d = setupCanvas('c-pulse'); if (!d) return;
+  const {ctx,w,h} = d;
+  const pad = {l:50, t:12, r:20, b:30};
+
+  // Cursors: h[-2], h[-1], h[0]=main, h[1], h[2], h[3]
+  const cursors = [-2,-1,0,1,2,3,4,5];
+  const h112 = [0.04, 0.12, 0.80, 0.38, 0.14, 0.06, 0.02, 0.01];
+  const h224 = [0.06, 0.18, 0.72, 0.45, 0.20, 0.10, 0.05, 0.02];
+
+  const nc = cursors.length;
+  const bw = (w-pad.l-pad.r) / (nc+1);
+  const toX = i => pad.l + (i+1.5) * bw;
+  const toY = v => pad.t + (1-v) * (h-pad.t-pad.b) * 0.9 + (h-pad.t-pad.b)*0.05;
+
+  ctx.clearRect(0,0,w,h);
+  ctx.fillStyle='#fafaf8'; ctx.fillRect(0,0,w,h);
+  ctx.strokeStyle='#aaa'; ctx.lineWidth=1;
+  ctx.strokeRect(pad.l,pad.t,w-pad.l-pad.r,h-pad.t-pad.b);
+
+  // Y axis labels
+  [0,0.2,0.4,0.6,0.8,1.0].forEach(v => {
+    const y = toY(v);
+    ctx.strokeStyle=CGRID; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(pad.l,y); ctx.lineTo(w-pad.r,y); ctx.stroke();
+    ctx.font='9px IBM Plex Mono'; ctx.fillStyle=CTEXT; ctx.textAlign='right';
+    ctx.fillText(v.toFixed(1), pad.l-4, y+4);
+  });
+
+  cursors.forEach((c,i) => {
+    const x = toX(i);
+    const h12 = h112[i];
+    const h22 = h224[i];
+
+    ctx.fillStyle=C112+'33'; ctx.strokeStyle=C112; ctx.lineWidth=1.5;
+    ctx.fillRect(x-bw*0.22, toY(h12), bw*0.22, (h-pad.b)-toY(h12));
+    ctx.strokeRect(x-bw*0.22, toY(h12), bw*0.22, (h-pad.b)-toY(h12));
+
+    ctx.fillStyle=C224+'33'; ctx.strokeStyle=C224;
+    ctx.fillRect(x+2, toY(h22), bw*0.22, (h-pad.b)-toY(h22));
+    ctx.strokeRect(x+2, toY(h22), bw*0.22, (h-pad.b)-toY(h22));
+
+    ctx.font='8px IBM Plex Mono'; ctx.fillStyle='#666'; ctx.textAlign='center';
+    ctx.fillText('h['+c+']', x, h-pad.b+13);
+  });
+
+  // main cursor annotation
+  const mc_x = toX(2);
+  ctx.save();
+  ctx.strokeStyle='#444'; ctx.lineWidth=1; ctx.setLineDash([2,2]);
+  ctx.beginPath(); ctx.moveTo(mc_x, toY(0.8)-16); ctx.lineTo(mc_x, toY(0.72)-16); ctx.stroke();
+  ctx.font='9px IBM Plex Mono'; ctx.fillStyle='#333'; ctx.textAlign='center'; ctx.setLineDash([]);
+  ctx.fillText('Main cursor', mc_x, toY(0.82)-18);
+  ctx.restore();
+
+  // PMR annotation
+  ctx.font='9px IBM Plex Mono'; ctx.fillStyle='#444';
+  ctx.fillText(`PMR 112G = ${(h112[3]/h112[2]).toFixed(2)}`, pad.l+6, pad.t+12);
+  ctx.fillText(`PMR 224G = ${(h224[3]/h224[2]).toFixed(2)}`, pad.l+6, pad.t+24);
+
+  label(ctx, toX(0)-10, pad.t+38, '← pre-cursors', '#888');
+  label(ctx, toX(3)+10, pad.t+38, 'post-cursors →', '#888');
+
+  ctx.font='10px IBM Plex Sans'; ctx.fillStyle='#888'; ctx.textAlign='center';
+  ctx.fillText('Cursor Index', pad.l+(w-pad.l-pad.r)/2, h-2);
+  ctx.save(); ctx.translate(10, pad.t+(h-pad.t-pad.b)/2); ctx.rotate(-Math.PI/2);
+  ctx.fillText('Relative Amplitude', 0, 0); ctx.restore();
+}
+
+// Draw charts when charts page loads
+window.addEventListener('resize', () => { if (document.getElementById('page-charts').classList.contains('active')) { chartsDrawn=false; drawAllCharts(); }});
+
+</script>
+</body>
+</html>
